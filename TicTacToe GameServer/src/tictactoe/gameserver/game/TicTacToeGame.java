@@ -5,6 +5,7 @@
  */
 package tictactoe.gameserver.game;
 
+import java.net.Socket;
 import java.util.HashMap;
 
 /**
@@ -16,6 +17,9 @@ public class TicTacToeGame {
     private int attempt;
     private String word;
     private String answeredWord;
+    
+    private Socket player1Socket;
+    private Socket player2Socket;
 
     public TicTacToeGame() {
         this.score = 0;
@@ -48,6 +52,22 @@ public class TicTacToeGame {
 
     public void setWord(String word) {
         this.word = word;
+    }
+
+    public Socket getPlayer1Socket() {
+        return player1Socket;
+    }
+
+    public void setPlayer1Socket(Socket player1Socket) {
+        this.player1Socket = player1Socket;
+    }
+
+    public Socket getPlayer2Socket() {
+        return player2Socket;
+    }
+
+    public void setPlayer2Socket(Socket player2Socket) {
+        this.player2Socket = player2Socket;
     }
     
     public String getStringRepresentation() {
@@ -131,5 +151,9 @@ public class TicTacToeGame {
             if(this.score > 0) this.score -= 1;
             this.answeredWord = this.word;
         }
+    }
+    
+    public boolean isStartable() {
+        return (player1Socket != null && player2Socket != null);  
     }
 }

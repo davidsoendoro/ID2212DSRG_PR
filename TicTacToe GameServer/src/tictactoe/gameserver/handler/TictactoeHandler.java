@@ -8,12 +8,11 @@ package tictactoe.gameserver.handler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import tictactoe.gameserver.TicTacToeGameServer;
 import tictactoe.gameserver.game.TicTacToeGame;
 import tictactoe.gameserver.helper.SettingsHelper;
 
@@ -105,6 +104,19 @@ public class TictactoeHandler extends GenericHandler {
                 
                 if(disconnectCounter >= DISCONNECT_TIME) {
                     isEnded = true;
+                    if(TicTacToeGameServer.vacantGames.contains(tictactoeGame)) {
+                        TicTacToeGameServer.vacantGames.remove(tictactoeGame);
+                    }
+                    
+                    if(socket.equals(tictactoeGame.getPlayer1Socket())) {
+                        if(tictactoeGame.getPlayer2Socket() != null)
+                            opponentDisconnected(tictactoeGame.getPlayer2Socket());
+                    }
+                    else {
+                        if(tictactoeGame.getPlayer1Socket() != null)
+                            opponentDisconnected(tictactoeGame.getPlayer1Socket());                        
+                    }
+                    
                     writeOutput("USER IS DISCONNECTED!");
                     break;
                 }
@@ -146,6 +158,7 @@ public class TictactoeHandler extends GenericHandler {
     }
 
     private void executeAPI(String str, String parametersString) {
+        System.out.println(str);
         if(str.contains("startGame")) {
             startGameString();
         }
@@ -154,6 +167,12 @@ public class TictactoeHandler extends GenericHandler {
         }
         else if(str.contains("updateGame")) {
             updateGameString(parametersString);
+        }
+        else if(str.contains("joinGame")) {
+            joinGameString();
+        }
+        else if(str.contains("cancelGame")) {
+            cancelGameString();
         }
     }
 
@@ -310,10 +329,111 @@ public class TictactoeHandler extends GenericHandler {
         }
     }
 
+    private void joinGameString() {
+        printWriter = null;
+            
+        try {
+            // Do the process
+            String header, body;
+            if(joinGame()) {
+                // Construct header
+                header = "200 OK";
+
+                // Construct body
+                body = this.tictactoeGame.getStringRepresentation();
+            
+                // communicate to the other socket
+                printWriter = new PrintWriter(
+                        this.tictactoeGame.getPlayer1Socket().getOutputStream());
+
+                printWriter.println(header); // send GET request
+                printWriter.println();
+                printWriter.println(body);
+                printWriter.println();
+
+                printWriter.flush();
+            }
+            else {
+                // Construct header
+                header = "404 Not Found";
+
+                // Construct body
+                body = "Vacant games not found";
+            }
+                        
+            // communicate with a client via clientSocket
+            printWriter = new PrintWriter(socket.getOutputStream());
+                        
+            printWriter.println(header); // send GET request
+            printWriter.println();
+            printWriter.println(body);
+            printWriter.println();
+            
+            printWriter.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void cancelGameString() {   
+        printWriter = null;
+            
+        try {
+            // Do the process
+            cancelGame();
+                        
+            // communicate with a client via clientSocket
+            printWriter = new PrintWriter(socket.getOutputStream());
+            
+            // Construct header
+            String header = "200 OK";
+            
+            // Construct body
+            String body = "";
+            
+            printWriter.println(header); // send GET request
+            printWriter.println();
+            printWriter.println(body);
+            printWriter.println();
+            
+            printWriter.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void opponentDisconnected(Socket playerSocket) {
+        printWriter = null;
+            
+        try {
+            // Do the process
+                        
+            // communicate with a client via clientSocket
+            printWriter = new PrintWriter(playerSocket.getOutputStream());
+            
+            // Construct header
+            String header = "200 OK";
+            
+            // Construct body
+            String body = "Opponent disconnected, you won!";
+            
+            printWriter.println(header); // send GET request
+            printWriter.println();
+            printWriter.println(body);
+            printWriter.println();
+            
+            printWriter.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void startGame() {
         // Construct new HangmanGame
         if(this.tictactoeGame == null) {
-            this.tictactoeGame = new TicTacToeGame();                
+            this.tictactoeGame = new TicTacToeGame();
+            this.tictactoeGame.setPlayer1Socket(socket);
+            TicTacToeGameServer.vacantGames.add(tictactoeGame);
         }
         else {
             this.tictactoeGame.newWord();
@@ -331,5 +451,32 @@ public class TictactoeHandler extends GenericHandler {
         // Update HangmanGame
         this.tictactoeGame.processParameter(parametersString);
     }
-    
+
+    private boolean joinGame() {
+        while(!TicTacToeGameServer.vacantGames.isEmpty() && 
+                TicTacToeGameServer.vacantGames.get(0).getPlayer1Socket().isClosed()) {
+            TicTacToeGameServer.vacantGames.remove(0);
+        }
+        if(TicTacToeGameServer.vacantGames.size() > 0)
+            this.tictactoeGame = TicTacToeGameServer.vacantGames.get(0);
+
+        // Construct new HangmanGame
+        if(this.tictactoeGame == null) {
+            // No Vacant Game to join
+            writeOutput("No Vacant Game");
+            return false;
+        }
+        else {
+            // Join success
+            TicTacToeGameServer.vacantGames.remove(this.tictactoeGame);
+            this.tictactoeGame.setPlayer2Socket(socket);
+            writeOutput("Join Game: " + this.tictactoeGame.getWord());
+            return true;
+        }        
+    }
+
+    private void cancelGame() {
+        TicTacToeGameServer.vacantGames.remove(tictactoeGame);
+    }
+
 }

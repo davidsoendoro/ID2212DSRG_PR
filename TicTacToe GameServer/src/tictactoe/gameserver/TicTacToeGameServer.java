@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import tictactoe.gameserver.game.TicTacToeGame;
 import tictactoe.gameserver.handler.TictactoeHandler;
 import tictactoe.gameserver.helper.SettingsHelper;
 
@@ -25,6 +26,7 @@ public class TicTacToeGameServer {
     private static boolean isListening = true;
     private static ArrayList<Socket> clientSockets;
     private static ServerSocket serverSocket;
+    public static ArrayList<TicTacToeGame> vacantGames;
     
     /**
      * @param args the command line arguments
@@ -33,6 +35,7 @@ public class TicTacToeGameServer {
         int port = 8080;
         int threadNameCounter = 0;
         clientSockets = new ArrayList<>();
+        vacantGames = new ArrayList<>();
         
         InputHandler inputHandler = new InputHandler();
         inputHandler.start();
