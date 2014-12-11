@@ -23,7 +23,7 @@ import android.widget.Toast;
 public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickListener, Runnable, OnCancelListener {
 
 	private Button buttonLobbyConnect;
-	private CheckBox checkBoxVsPlayer;
+//	private CheckBox checkBoxVsPlayer;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +36,13 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		buttonLobbyConnect.setOnClickListener(TicTacToeLobby.this);
 		Button buttonLobbyJoin = (Button) findViewById(R.id.button_lobby_join);
 		buttonLobbyJoin.setOnClickListener(TicTacToeLobby.this);
-		checkBoxVsPlayer = (CheckBox) findViewById(R.id.checkBox_vsplayer);
+//		checkBoxVsPlayer = (CheckBox) findViewById(R.id.checkBox_vsplayer);
 	}
 
 	@Override
 	public void onClick(View v) {
 		String ip = "130.229.154.233";
-		int port = 8080;
+		int port = 8090;
 		
 		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);
 		EditText editTextPort = (EditText) findViewById(R.id.editText_lobby_port);
@@ -51,7 +51,7 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 			ip = editTextIp.getText().toString();
 		}
 		if(editTextPort.getText().length() > 0) {
-			port = Integer.getInteger(editTextPort.getText().toString());
+			port = Integer.valueOf(editTextPort.getText().toString());
 		}
 		
 		// Threading
@@ -61,12 +61,12 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		if(TicTacToeHelper.game.getSocket() != null) {
 			if(v.getId() == R.id.button_lobby_create) {
 				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-				if(checkBoxVsPlayer.isChecked()) {
-					TicTacToeHelper.game.createGame();					
-				}
-				else {
+//				if(checkBoxVsPlayer.isChecked()) {
+//					TicTacToeHelper.game.createGame();					
+//				}
+//				else {
 					TicTacToeHelper.game.createSingleGame();					
-				}
+//				}
 			}
 			else if(v.getId() == R.id.button_lobby_join) {
 				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);

@@ -29,13 +29,13 @@
         android:ems="10"
         android:hint="@string/editText_lobby_port"
         android:inputType="number" />
-
+<!-- 
     <CheckBox
         android:id="@+id/checkBox_vsplayer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/checkBox_vsplayer" />
-
+ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

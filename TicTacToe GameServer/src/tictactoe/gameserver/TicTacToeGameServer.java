@@ -32,7 +32,7 @@ public class TicTacToeGameServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        int port = 8080;
+        int port = 8090;
         int threadNameCounter = 0;
         clientSockets = new ArrayList<>();
         vacantGames = new ArrayList<>();
