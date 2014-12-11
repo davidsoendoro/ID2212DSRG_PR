@@ -13,24 +13,6 @@
 	android:layout_marginRight="5dip"
 	android:layout_marginTop="20dip"
 	/>
-    
-	<ImageView android:id="@+id/new_game_online"
-	android:background="@drawable/new_game"
-	android:layout_width="wrap_content"
-	android:layout_height="60dip"
-	android:layout_alignParentRight="true" 
-	android:layout_marginRight="5dip"
-	android:layout_below="@id/title"
-	android:layout_marginTop="20dip"
-	/>
-	<ImageView android:id="@+id/new_game"
-	android:background="@drawable/new_game"
-	android:layout_width="wrap_content"
-	android:layout_height="60dip"
-	android:layout_alignParentRight="true" 
-	android:layout_marginRight="5dip"
-	android:layout_below="@id/new_game_online"
-	/>
 <!-- 	
 	<ImageView android:id="@+id/options"
 	android:background="@drawable/options"
@@ -49,14 +31,47 @@
 	android:layout_marginRight="5dip"
 	android:layout_below="@id/options"
 	/>
- -->	
-	<ImageView android:id="@+id/quit"
-	android:background="@drawable/quit"
-	android:layout_width="wrap_content"
-	android:layout_height="60dip"
-	android:layout_alignParentRight="true" 
-	android:layout_marginRight="5dip"
-	android:layout_below="@id/new_game"
-	/>
+ -->
+	<ImageView
+	    android:id="@+id/new_game_pvc_offline"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_above="@+id/new_game_pvp_p2p"
+	    android:layout_alignParentLeft="true"
+	    android:background="@drawable/new_game_pvc_offline" />
+
+	<ImageView
+	    android:id="@+id/quit"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignParentLeft="true"
+	    android:layout_marginBottom="28dp"
+	    android:background="@drawable/quit" />
+
+	<ImageView
+	    android:id="@+id/new_game_pvc_online"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_above="@+id/new_game_pvc_offline"
+	    android:layout_alignParentLeft="true"
+	    android:background="@drawable/new_game_pvc_online" />
+
+	<ImageView
+	    android:id="@+id/new_game_pvp_online"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_above="@+id/new_game_pvc_online"
+	    android:layout_alignParentLeft="true"
+	    android:background="@drawable/new_game_pvp_online" />
+
+	<ImageView
+	    android:id="@+id/new_game_pvp_p2p"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_above="@+id/quit"
+	    android:layout_alignParentLeft="true"
+	    android:layout_marginBottom="32dp"
+	    android:background="@drawable/new_game_pvp_p2p" />
     
 </RelativeLayout>

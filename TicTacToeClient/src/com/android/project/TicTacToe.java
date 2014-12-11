@@ -22,8 +22,8 @@ public class TicTacToe extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome);
 
-        final ImageView iv_new_game_online = (ImageView) findViewById(R.id.new_game_online);
-        final ImageView iv_new_game = (ImageView) findViewById(R.id.new_game);
+        final ImageView iv_new_game_online = (ImageView) findViewById(R.id.new_game_pvc_online);
+        final ImageView iv_new_game = (ImageView) findViewById(R.id.new_game_pvc_offline);
         final ImageView iv_quit = (ImageView) findViewById(R.id.quit);
 
         iv_new_game_online.setOnClickListener(welcome_listener);
@@ -37,14 +37,24 @@ public class TicTacToe extends Activity {
     OnClickListener welcome_listener = new View.OnClickListener() {
     	public void onClick(View v) {
     		final ImageView iv = (ImageView) v;
-    		if (iv.getId() == R.id.new_game_online) {
+    		if (iv.getId() == R.id.new_game_pvc_online) {
     			Intent i = new Intent(TicTacToe.this, TicTacToeLobby.class);
     			startActivity(i);
     		}
-    		else if (iv.getId() == R.id.new_game) {
+    		else if (iv.getId() == R.id.new_game_pvc_offline) {
     			Intent i = new Intent(TicTacToe.this, TicTacToeGame.class);
     			startActivity(i);
     		}
+    		else if (iv.getId() == R.id.new_game_pvp_online) {
+    			//Intent i = new Intent(TicTacToe.this, TicTacToeGame.class);
+    			//startActivity(i);
+    		}
+    		else if (iv.getId() == R.id.new_game_pvp_p2p) {
+    			//Intent i = new Intent(TicTacToe.this, TicTacToeGame.class);
+    			//startActivity(i);
+    		}
+    		
+    		
     		else if (iv.getId() == R.id.quit) {
     			finish();
     		}
