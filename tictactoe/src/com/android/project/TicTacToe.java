@@ -27,14 +27,14 @@ public class TicTacToe extends Activity {
         
         final Button button_newonlinegame = (Button) findViewById(R.id.button_newonlinegame);
         final ImageView iv_new_game = (ImageView) findViewById(R.id.new_game);
-        final ImageView iv_options = (ImageView) findViewById(R.id.options);
-        final ImageView iv_help = (ImageView) findViewById(R.id.help);
+//        final ImageView iv_options = (ImageView) findViewById(R.id.options);
+//        final ImageView iv_help = (ImageView) findViewById(R.id.help);
         final ImageView iv_quit = (ImageView) findViewById(R.id.quit);
         
         button_newonlinegame.setOnClickListener(welcome_listener);
         iv_new_game.setOnClickListener(welcome_listener);
-        iv_options.setOnClickListener(welcome_listener);
-        iv_help.setOnClickListener(welcome_listener);
+//        iv_options.setOnClickListener(welcome_listener);
+//        iv_help.setOnClickListener(welcome_listener);
         iv_quit.setOnClickListener(welcome_listener);
     }
     
@@ -50,12 +50,12 @@ public class TicTacToe extends Activity {
     		else if (v.getId() == R.id.new_game) {
     			showDialog(NAME_DIALOG_ID);
     		}
-    		else if(v.getId() == R.id.options) {
-    			options_menu();
-    		}
-    		else if (v.getId() == R.id.help) {
-    			showDialog(HELP_DIALOG_ID);
-    		}
+//    		else if(v.getId() == R.id.options) {
+//    			options_menu();
+//    		}
+//    		else if (v.getId() == R.id.help) {
+//    			showDialog(HELP_DIALOG_ID);
+//    		}
     		else if (v.getId() == R.id.quit) {
     			finish();
     		}

@@ -35,7 +35,7 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 	public void onClick(View v) {
 		// Threading
 		TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobby.this, 
-				"192.168.1.18", 8080);
+				"130.229.143.24", 8080);
 
 		if(v.getId() == R.id.button_lobby_create) {
 			TicTacToeHelper.game.setCallback(TicTacToeLobby.this);

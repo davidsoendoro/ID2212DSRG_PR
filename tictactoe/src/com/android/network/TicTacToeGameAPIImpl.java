@@ -31,7 +31,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		
 		try {
 			socket = new Socket(ip, port);
-//			socket.setSoTimeout(TIMEOUT);			
+//			socket.setSoTimeout(TIMEOUT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
