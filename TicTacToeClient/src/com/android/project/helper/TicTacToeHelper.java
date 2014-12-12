@@ -1,12 +1,14 @@
 package com.android.project.helper;
 
 import com.android.network.TicTacToeGameAPIImpl;
+import com.android.network.TicTacToeGameAPIP2PImpl;
 import com.android.network.TicTacToeLobbyAPIImpl;
 
 public class TicTacToeHelper {
 
 	public static TicTacToeGameAPIImpl game;
 	public static TicTacToeLobbyAPIImpl lobby;
+	public static TicTacToeGameAPIP2PImpl gameP2p;
 	
 	public static final int COMMAND_CREATEGAME = 1;
 	public static final int COMMAND_JOINGAME = 2;
