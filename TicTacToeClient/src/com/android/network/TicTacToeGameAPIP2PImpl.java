@@ -277,9 +277,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			String str;
 			try {				
 				clientSocket= serverSocket.accept();
-                TictactoeHandler handler = new TictactoeHandler(clientSocket);
-                handler.setPriority(handler.getPriority() + 1);
-                handler.start();
+         //       TictactoeHandler handler = new TictactoeHandler(clientSocket);
+           //     handler.setPriority(handler.getPriority() + 1);
+             //   handler.start();
 
 				PrintWriter wr = new PrintWriter(clientSocket.getOutputStream());
                 wr.println("GET startGame HTTP/1.0");

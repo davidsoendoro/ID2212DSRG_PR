@@ -66,8 +66,8 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		// Threading
 		if(TicTacToeHelper.game.getSocket() != null) {
 			if(v.getId() == R.id.button_lobby_create) {
-				TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this, 
-						ip, port);
+		//		TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this, 
+			//			ip, port);
 				TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
 				TicTacToeHelper.gameP2p.createGame();					
 			}

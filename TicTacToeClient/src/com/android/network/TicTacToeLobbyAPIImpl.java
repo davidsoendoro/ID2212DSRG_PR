@@ -19,8 +19,10 @@ import android.net.http.AndroidHttpClient;
 
 public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
-	private static final String URI_GETLIST = "http://130.229.154.233:8080/TicTacToe_LobbyServer/LobbyServlet";
-	
+	private static final String URI_GETLIST = "http://192.168.0.101:8080/TicTacToe_LobbyServer/LobbyServlet";
+	private static final String URI_CREATEGAME = "http://192.168.0.101:8080/TicTacToe_LobbyServer/CreateGame?name=";
+	private static final String URI_JOINGAME = "http://192.168.0.101:8080/TicTacToe_LobbyServer/JoinGame?name=";
+
 	private boolean isCalling = false;
 	
 	private AndroidHttpClient androidHttpClient;
@@ -57,14 +59,32 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 	}
 
 	@Override
-	public void createGame() {
-		// TODO Auto-generated method stub
+	public void createGame(String name) {
+		while(isCalling);
+		isCalling = true;
+
+		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+				"Creating Game", "Creating..."));
+		
+		ConnectionThread connectionThread = new ConnectionThread(name);
+		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
+		connectionThread.start();
+		
 		
 	}
 
 	@Override
-	public void joinGame() {
-		// TODO Auto-generated method stub
+	public void joinGame(String name) {
+		while(isCalling);
+		isCalling = true;
+
+		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+				"Joining Game", "Joining..."));
+		
+		ConnectionThread connectionThread = new ConnectionThread(name);
+		connectionThread.setCommand(TicTacToeHelper.COMMAND_JOINGAME);
+		connectionThread.start();
+		
 
 	}
 
@@ -102,12 +122,71 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 			if (command == TicTacToeHelper.COMMAND_GETGAMELIST) {
 				getGameListRequest();
 			}
+			else if(command == TicTacToeHelper.COMMAND_CREATEGAME){
+				createGameRequest();
+			}
+			else if(command == TicTacToeHelper.COMMAND_JOINGAME){
+				joinGameRequest();
+			}
+			
 		}
 
 		private void getGameListRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
 			HttpGet httpGet = new HttpGet(URI_GETLIST);
+			try {
+				HttpResponse response = androidHttpClient.execute(httpGet);
+				
+				InputStream inputStream = response.getEntity().getContent();
+				BufferedReader bufferedReader = new BufferedReader(new 
+						InputStreamReader(inputStream),1024);
+			    String readLine=bufferedReader.readLine();
+			    while (readLine != null) {
+			    	stringBuffer += readLine;
+			    	readLine=bufferedReader.readLine();
+			    }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				setResult(stringBuffer);
+				getActivity().runOnUiThread(callback);
+				androidHttpClient.close();
+				isCalling = false;
+			}
+		}
+		
+		private void createGameRequest() {
+			String stringBuffer = "";
+			androidHttpClient = AndroidHttpClient.newInstance("Android");
+			HttpGet httpGet = new HttpGet(URI_CREATEGAME+this.arguments);
+			try {
+				HttpResponse response = androidHttpClient.execute(httpGet);
+				
+				InputStream inputStream = response.getEntity().getContent();
+				BufferedReader bufferedReader = new BufferedReader(new 
+						InputStreamReader(inputStream),1024);
+			    String readLine=bufferedReader.readLine();
+			    while (readLine != null) {
+			    	stringBuffer += readLine;
+			    	readLine=bufferedReader.readLine();
+			    }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				setResult(stringBuffer);
+				getActivity().runOnUiThread(callback);
+				androidHttpClient.close();
+				isCalling = false;
+			}
+		}
+		
+		private void joinGameRequest() {
+			String stringBuffer = "";
+			androidHttpClient = AndroidHttpClient.newInstance("Android");
+			HttpGet httpGet = new HttpGet(URI_JOINGAME+this.arguments);
 			try {
 				HttpResponse response = androidHttpClient.execute(httpGet);
 				

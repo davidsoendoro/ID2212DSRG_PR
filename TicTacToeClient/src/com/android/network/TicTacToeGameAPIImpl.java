@@ -18,7 +18,6 @@ import android.app.ProgressDialog;
 
 public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 
-	private static final int TIMEOUT = 10000;
 	private String ip;
 	private int port;
 	private Socket socket;
@@ -36,7 +35,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		
 		try {
 			socket = new Socket(ip, port);
-			socket.setSoTimeout(TIMEOUT);
+//			socket.setSoTimeout(TIMEOUT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -300,8 +299,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		}
 
 		private void createSingleGameRequest() {
-			String completeStr = "";
-			String str = "";
+			String str;
 			try {				
 				// Prepare Message
 				T3Protocol protocol = new T3Protocol();
@@ -314,16 +312,15 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while ((str = rd.readLine()) != null && !str.trim().equals("")) {
                     System.out.println(str);
-                    completeStr += str;
-                }			
+                    setResult(str);
+                    getActivity().runOnUiThread(callback);
+                }
+				
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
-			finally {
-                setResult(completeStr);
-                getActivity().runOnUiThread(callback);	
+			} finally {
 				isCalling = false;
 			}
 		}
