@@ -50,7 +50,6 @@ public class TicTacToe extends Activity {
     			startActivity(i);
     		}
     		else if (iv.getId() == R.id.new_game_pvp_online) {
-    			System.out.println("eee");
     			Intent i = new Intent(TicTacToe.this, TicTacToeCreateJoinActivity.class);
     			startActivity(i);
     		}
