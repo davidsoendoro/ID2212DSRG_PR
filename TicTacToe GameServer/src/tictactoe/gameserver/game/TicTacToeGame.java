@@ -102,10 +102,14 @@ public class TicTacToeGame {
         return (player1Socket != null && player2Socket != null);  
     }
     
-    public String makeMove(String position) {
+    public String makeMove(String position, int player) {
+        if(this.player!=player){
         count = incrementCount();
-        player = 2;
+        this.player = player;
         return afterMove(position);
+        }
+        else
+            return null;
     }
     
     public String afterMove(String position) {
@@ -141,7 +145,7 @@ public class TicTacToeGame {
             if (player == 1) {
                 score_player_1 += 1;
                 if (game_mode == 0) {
-                    message = "Congrats 1 wins !!";
+                    message = "Congrats player 1 wins !!";
                 }
                 else {
                     message = "Computer Wins !!";
@@ -150,7 +154,7 @@ public class TicTacToeGame {
             else {
                 score_player_2 += 1;
                 if (game_mode == 0) {	// human vs human  
-                    message = "Congrats 2 wins !!";
+                    message = "Congrats player 2 wins !!";
                 }
                 else {	// human vs computer
                     message = "Congrats You have won !!";

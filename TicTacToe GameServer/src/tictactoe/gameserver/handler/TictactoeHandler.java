@@ -609,7 +609,7 @@ public class TictactoeHandler extends GenericHandler {
     private String makeMove(JsonObject body) {
         JsonElement element = body.get("position");
         String position = element.getAsString();
-        String retVal = this.tictactoeGame.makeMove(position);
+        String retVal = this.tictactoeGame.makeMove(position,2);
         return retVal;
     }
 
