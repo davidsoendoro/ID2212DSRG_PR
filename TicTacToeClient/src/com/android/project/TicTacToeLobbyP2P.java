@@ -69,13 +69,13 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		//		TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this, 
 			//			ip, port);
 				TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
-				TicTacToeHelper.gameP2p.createGame();					
+				TicTacToeHelper.gameP2p.createGame(0);					
 			}
 			else if(v.getId() == R.id.button_lobby_join) {
 				TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
 						ip, port);
 				TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
-				TicTacToeHelper.game.joinGame();
+				//TicTacToeHelper.game.joinGame();
 			}
 		}
 		else {

@@ -17,7 +17,7 @@ public class TicTacToeGame {
     private int arr[][] = 
 	    {{0,0,0},{0,0,0},{0,0,0}};	// array which stores the movements made.
     int game_mode = 1;	// default 0 : h Vs h ; 1 : h Vs Comp
-    int player = 1;	// sets the player no. to 1 by default.
+    int player = 2;	// sets the player no. to 2 by default.
     int count = 0;	
     int map_arr[][] = 
             {{1,1,1},{1,1,1},{1,1,1}};	// friend and enemy map initialization.
@@ -37,7 +37,10 @@ public class TicTacToeGame {
 
     public TicTacToeGame() {
     }
-
+    
+    public void setGame_mode(int game_mode){
+        this.game_mode=game_mode;
+    }
     public Socket getPlayer1Socket() {
         return player1Socket;
     }

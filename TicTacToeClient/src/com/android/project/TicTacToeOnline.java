@@ -98,6 +98,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 
 	@Override
 	public void run() {
+		System.out.println("CALLED");
 		if(getDialog() != null && getDialog().isShowing())
 			getDialog().dismiss();
 		String result = TicTacToeHelper.game.getResult();
@@ -106,6 +107,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 			JSONObject resultObj = new JSONObject(result);
 			String request = resultObj.getString("Request");
 			if(request.equals("MakeMove")) {
+				System.out.println("make move");
 				doGame(resultObj);				
 			}
 			else if(request.equals("ResetGame")) {

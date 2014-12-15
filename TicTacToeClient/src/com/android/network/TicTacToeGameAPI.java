@@ -10,12 +10,12 @@ public interface TicTacToeGameAPI {
 	/**
 	 * Create a new game, if success then wait for contender
 	 */
-	public void createGame();
+	public void createGame(int id);
 	
 	/**
 	 * If a game is open, join that game, if no game is opened then return error
 	 */
-	public void joinGame();
+	public void joinGame(int id);
 	
 	/**
 	 * Start a created game

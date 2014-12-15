@@ -27,11 +27,14 @@ import tictactoe.gameserver.model.T3Protocol;
 public class TictactoeHandler extends GenericHandler {
 
     private final Socket socket;
+    private Socket player2socket;
     private TicTacToeGame tictactoeGame;
     private boolean isEnded;
     private PrintWriter printWriter;
+    private PrintWriter printWriter1;
     private final int DISCONNECT_TIME = 3;
     private int disconnectCounter;
+    int turn=1; //= 1 for player 1's turn, = 2 for player 2's turn
     
     public TictactoeHandler(Socket socket) {
         this.socket = socket;
@@ -44,6 +47,10 @@ public class TictactoeHandler extends GenericHandler {
         this.setName(threadName);
     }
     
+    public void setPlayer2socket(Socket socket){
+        
+        this.player2socket=socket;
+    }
     private void initialize() {
         this.tictactoeGame = null;
         this.isEnded = false;
@@ -85,8 +92,16 @@ public class TictactoeHandler extends GenericHandler {
     private void readString() {
         try {
             int i = 0;
-            BufferedReader rd = new BufferedReader(new InputStreamReader(
+            BufferedReader rd=new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
+            if(turn==1){
+            rd = new BufferedReader(new InputStreamReader(
+                socket.getInputStream()));
+            }
+            else if(turn ==2){
+                rd = new BufferedReader(new InputStreamReader(
+                player2socket.getInputStream()));
+            }
             while(!isEnded) {
                 String str, completeString;
                 completeString = "";
@@ -196,13 +211,20 @@ public class TictactoeHandler extends GenericHandler {
             endGameString();
         }
         else if(str.contains("joinGame")) {
-            joinGameString();
+            JsonElement bodyElement = requestObject.get("Body");
+            JsonObject body = bodyElement.getAsJsonObject();
+            joinGame(body);
         }
         else if(str.contains("cancelGame")) {
             cancelGameString();
         }
         else if(str.equals("NewSingleGame")) {
             newSingleGameString();
+        }
+        else if(str.equals("createGame")) {
+            JsonElement bodyElement = requestObject.get("Body");
+            JsonObject body = bodyElement.getAsJsonObject();
+            createGame(body);
         }
         else if(str.equals("MakeMove")) {
             JsonElement bodyElement = requestObject.get("Body");
@@ -368,7 +390,7 @@ public class TictactoeHandler extends GenericHandler {
     }
 
     private void joinGameString() {
-        printWriter = null;
+      /*  printWriter = null;
             
         try {
             // Do the process
@@ -410,7 +432,7 @@ public class TictactoeHandler extends GenericHandler {
             printWriter.flush();
         } catch (IOException ex) {
             Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
     
     private void cancelGameString() {   
@@ -469,13 +491,57 @@ public class TictactoeHandler extends GenericHandler {
             Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    private void createGameString() {
+        printWriter = null;
+        printWriter1= null;
+        try {
+            // Do the process
 
+                        
+            // communicate with a client via clientSocket
+            printWriter = new PrintWriter(socket.getOutputStream());
+            
+            // Construct header
+            T3Protocol protocol = new T3Protocol();
+            protocol.setRequest("createGame");
+            // Construct body
+            protocol.setBody(this.tictactoeGame.getStringRepresentation());
+            
+            printWriter.println(protocol.toString());
+            printWriter.println();
+            
+            printWriter.flush();
+            
+            // communicate with a client via clientSocket
+            printWriter1 = new PrintWriter(player2socket.getOutputStream());
+            
+            // Construct header
+            T3Protocol protocol1 = new T3Protocol();
+            protocol1.setRequest("joinGame");
+            // Construct body
+            protocol1.setBody(this.tictactoeGame.getStringRepresentation());
+            
+            printWriter1.println(protocol1.toString());
+            printWriter1.println();
+            
+            printWriter1.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     private void makeMoveString(JsonObject body) {
         printWriter = null;
+        printWriter1=null; 
             
         try {
             // Do the process
             makeMove(body);
+            if(turn==1)
+                turn=2;
+            else if(turn==2)
+                turn=1;
                         
             // communicate with a client via clientSocket
             printWriter = new PrintWriter(socket.getOutputStream());
@@ -490,6 +556,18 @@ public class TictactoeHandler extends GenericHandler {
             printWriter.println();
             
             printWriter.flush();
+            printWriter1 = new PrintWriter(player2socket.getOutputStream());
+            
+            // Construct header
+            T3Protocol protocol1 = new T3Protocol();
+            protocol1.setRequest("MakeMove");
+            // Construct body
+            protocol1.setBody(this.tictactoeGame.getStringRepresentation());
+            
+            printWriter1.println(protocol1.toString());
+            printWriter1.println();
+            
+            printWriter1.flush();
         } catch (IOException ex) {
             Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -545,7 +623,7 @@ public class TictactoeHandler extends GenericHandler {
             Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     private void startGame() {
         // Construct new HangmanGame
         if(this.tictactoeGame == null) {
@@ -569,7 +647,8 @@ public class TictactoeHandler extends GenericHandler {
         this.tictactoeGame.processParameter(parametersString);
     }
 
-    private boolean joinGame() {
+    private void joinGame(JsonObject obj) {
+        /*
         while(!TicTacToeGameServer.vacantGames.isEmpty() && 
                 TicTacToeGameServer.vacantGames.get(0).getPlayer1Socket().isClosed()) {
             TicTacToeGameServer.vacantGames.remove(0);
@@ -588,7 +667,14 @@ public class TictactoeHandler extends GenericHandler {
             TicTacToeGameServer.vacantGames.remove(this.tictactoeGame);
             this.tictactoeGame.setPlayer2Socket(socket);
             return true;
-        }        
+        }      */
+        System.out.println("Received join");
+        if(TicTacToeGameServer.map.containsKey(obj.get("GameId").getAsInt())){
+          
+            TicTacToeGameServer.map.get(obj.get("GameId").getAsInt()).setPlayer2socket(this.socket);
+            TicTacToeGameServer.map.get(obj.get("GameId").getAsInt()).createGameString();
+            System.out.println("returned");
+        }
     }
 
     private void cancelGame() {
@@ -605,11 +691,25 @@ public class TictactoeHandler extends GenericHandler {
 //            this.tictactoeGame.newWord();
         }
     }
-
+    
+    
+    private void createGame(JsonObject body) {
+        // Construct new HangmanGame
+        if(this.tictactoeGame == null) {
+            this.tictactoeGame = new TicTacToeGame();
+            this.tictactoeGame.setGame_mode(0);
+            TicTacToeGameServer.map.put(body.get("GameId").getAsInt(), this);
+            System.out.println("added in hash");
+        }
+        else {
+            // New TicTacToeGame
+//            this.tictactoeGame.newWord();
+        }
+    }
     private String makeMove(JsonObject body) {
         JsonElement element = body.get("position");
         String position = element.getAsString();
-        String retVal = this.tictactoeGame.makeMove(position,2);
+        String retVal = this.tictactoeGame.makeMove(position,turn);
         return retVal;
     }
 

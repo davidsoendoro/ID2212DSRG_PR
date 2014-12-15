@@ -5,11 +5,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.android.network.TicTacToeGameAPIImpl;
 import com.android.network.TicTacToeLobbyAPIImpl;
 import com.android.project.helper.TicTacToeHelper;
 
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,6 +21,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runnable {
 	ListView list;
+	int flag=0;
 	ArrayList<String> gameNames=new ArrayList<String>();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 	}
 
 	private void getAllGames() {
+		flag=1;
 		TicTacToeHelper.lobby.getGameList();
 	}
 
@@ -46,8 +50,10 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 
 
 		try {
+			if(flag==1){
 			JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
 			if(obj.has("Games")){
+			flag=0;
 			JSONArray arr= new JSONArray(obj.getString("Games"));
 			for(int i=0;i<arr.length();i++){
 				JSONObject item= (JSONObject) arr.get(i);
@@ -55,10 +61,24 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 			}
 			}
 			else if(obj.has("GameId")){
+				flag=0;
 				System.out.println("Received game Id: "+obj.getInt("GameId"));
-				
+				TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyPvP.this, 
+						"192.168.0.101", 8090);
+				TicTacToeHelper.game.setCallback(TicTacToeLobbyPvP.this);
+				TicTacToeHelper.game.joinGame(obj.getInt("GameId"));
 			}
-		} catch (JSONException e) {
+		}
+			else if(flag==0){
+				JSONObject obj= new JSONObject(TicTacToeHelper.game.getResult());
+				if(obj.getString("Request").equals("joinGame")) {
+					// Callback for NewSingleGame
+					System.out.println("I am here");
+					Intent i = new Intent(this, TicTacToeOnline.class);
+					startActivity(i);
+				}
+			}
+		}catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
@@ -69,6 +89,7 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+				flag=1;
 				TicTacToeHelper.lobby.joinGame(gameNames.get(position));
 
 			}

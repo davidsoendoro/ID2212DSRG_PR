@@ -82,7 +82,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	}
 
 	@Override
-	public void createGame() {
+	public void createGame(int id) {
 		while(isCalling);
 		isCalling = true;
 		
@@ -95,7 +95,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	}
 
 	@Override
-	public void joinGame() {
+	public void joinGame(int id) {
 		while(isCalling);
 		isCalling = true;
 

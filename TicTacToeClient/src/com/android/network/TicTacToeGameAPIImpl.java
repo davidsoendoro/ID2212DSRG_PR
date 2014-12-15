@@ -81,27 +81,27 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 	}
 
 	@Override
-	public void createGame() {
+	public void createGame(int id) {
 		while(isCalling);
 		isCalling = true;
 		
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Creating Game", "Now Creating..."));
 		
-		ConnectionThread connectionThread = new ConnectionThread();
+		ConnectionThread connectionThread = new ConnectionThread(""+id);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
 		connectionThread.start();
 	}
 
 	@Override
-	public void joinGame() {
+	public void joinGame(int id) {
 		while(isCalling);
 		isCalling = true;
 
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Joining Game", "Now joining..."));
 
-		ConnectionThread connectionThread = new ConnectionThread();
+		ConnectionThread connectionThread = new ConnectionThread(""+id);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_JOINGAME);
 		connectionThread.start();
 	}
@@ -275,23 +275,30 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		private void createGameRequest() {
 			String str;
 			try {				
+				// Prepare Message
+				T3Protocol protocol = new T3Protocol();
+				protocol.setRequest("createGame");
+				JSONObject body = new JSONObject();
+				body.put("GameId", this.arguments);
+				protocol.setBody(body);
+				
 				PrintWriter wr = new PrintWriter(socket.getOutputStream());
-                wr.println("GET startGame HTTP/1.0");
+                wr.println(protocol.toString());
                 wr.println();
                 wr.flush();
                 BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while ((str = rd.readLine()) != null && !str.trim().equals("")) {
                     System.out.println(str);
-                }
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                    System.out.println(str);
-                    setResult(command + " - " + "startGame" + " - " + str);
+                    setResult(str);
                     getActivity().runOnUiThread(callback);
                 }
 				
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} finally {
 				isCalling = false;
@@ -326,27 +333,32 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		}
 
 		private void joinGameRequest() {
-			String str, fullMsg = "";
+			String str;
 			try {				
+				// Prepare Message
+				T3Protocol protocol = new T3Protocol();
+				protocol.setRequest("joinGame");
+				JSONObject body = new JSONObject();
+				body.put("GameId", this.arguments);
+				protocol.setBody(body);
+				
 				PrintWriter wr = new PrintWriter(socket.getOutputStream());
-                wr.println("GET joinGame HTTP/1.0");
+                wr.println(protocol.toString());
                 wr.println();
                 wr.flush();
                 BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                	fullMsg += str;
                     System.out.println(str);
-                }
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                	fullMsg += str;
-                    System.out.println(str);
-                    setResult(command + " - " + "joinGame" + " - " + fullMsg);
+                    setResult(str);
                     getActivity().runOnUiThread(callback);
                 }
 				
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} finally {
 				isCalling = false;
@@ -410,6 +422,22 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				e.printStackTrace();
 			} finally {
 				isCalling = false;
+			}
+		}
+		
+		public void isListening(){
+			String str;
+			try {
+			BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
+				while ((str = rd.readLine()) != null && !str.trim().equals("")) {
+				    System.out.println(str);
+				    setResult(str);
+				    getActivity().runOnUiThread(callback);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 

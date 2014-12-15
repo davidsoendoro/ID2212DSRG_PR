@@ -10,6 +10,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ public class TicTacToeGameServer {
     private static ArrayList<Socket> clientSockets;
     private static ServerSocket serverSocket;
     public static ArrayList<TicTacToeGame> vacantGames;
+    public static HashMap<Integer,TictactoeHandler> map=new HashMap<>();
     
     /**
      * @param args the command line arguments

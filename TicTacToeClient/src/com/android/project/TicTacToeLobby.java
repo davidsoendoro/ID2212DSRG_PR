@@ -70,7 +70,7 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 			}
 			else if(v.getId() == R.id.button_lobby_join) {
 				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-				TicTacToeHelper.game.joinGame();
+				//TicTacToeHelper.game.joinGame();
 			}
 		}
 		else {
