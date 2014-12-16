@@ -56,16 +56,10 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		if(TicTacToeHelper.game.getSocket() != null) {
 			if(v.getId() == R.id.button_lobby_create) {
 				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-//				if(checkBoxVsPlayer.isChecked()) {
-//					TicTacToeHelper.game.createGame();					
-//				}
-//				else {
-					TicTacToeHelper.game.createSingleGame();					
-//				}
+				TicTacToeHelper.game.createSingleGame();					
 			}
 			else if(v.getId() == R.id.button_lobby_join) {
 				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-				//TicTacToeHelper.game.joinGame();
 			}
 		}
 		else {

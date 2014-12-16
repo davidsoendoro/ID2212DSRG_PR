@@ -63,7 +63,7 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 					flag=0;
 					System.out.println("Received game Id: "+obj.getInt("GameId"));
 					TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyPvP.this, 
-						"192.168.1.18", 8090);
+						TicTacToeHelper.serverAddress, 8090);
 					TicTacToeHelper.game.setCallback(TicTacToeLobbyPvP.this);
 					TicTacToeHelper.game.joinGame(obj.getInt("GameId"));
 				}

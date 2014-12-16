@@ -16,7 +16,7 @@ import android.net.http.AndroidHttpClient;
 
 public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
-	private static final String URI_SERVERADDR = "http://192.168.1.18:8080";
+	private static final String URI_SERVERADDR = "http://" + TicTacToeHelper.serverAddress + ":8080";
 	private static final String URI_GETLIST = URI_SERVERADDR + "/TicTacToe_LobbyServer/LobbyServlet";
 	private static final String URI_CREATEGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/CreateGame?name=";
 	private static final String URI_JOINGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/JoinGame?name=";
