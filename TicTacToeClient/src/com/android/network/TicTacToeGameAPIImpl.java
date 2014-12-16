@@ -5,16 +5,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.android.project.TicTacToeGenericActivity;
+import com.android.project.TicTacToeOnline;
 import com.android.project.helper.TicTacToeHelper;
 import com.android.project.model.T3Protocol;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 
 public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 
@@ -35,7 +39,6 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		
 		try {
 			socket = new Socket(ip, port);
-//			socket.setSoTimeout(TIMEOUT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -144,8 +147,41 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		while(isCalling);
 		isCalling = true;
 
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Wait for Opponent", "Now Waiting..."));
+		ProgressDialog dialog = new ProgressDialog(getActivity());
+		dialog.setCancelable(true);
+		dialog.setTitle("Wait for Opponent");
+		dialog.setMessage("Now Waiting...");
+		dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			
+			@Override
+			public void onCancel(final DialogInterface dialog) {
+				AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+				alert.setTitle("Quit?");
+				alert.setMessage("Are you sure you want to quit the game?");
+				
+				alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface alertDialog, int which) {
+						TicTacToeHelper.game.cancelGame();
+						getActivity().finish();
+					}
+				});
+				alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface alertDialog, int which) {
+						alertDialog.dismiss();
+						getActivity().getDialog().show();
+					}
+				});
+				
+				alert.create().show();
+			}
+		});
+		getActivity().setDialog(dialog);
+		getActivity().getDialog().show();
 		
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_WAITFORMOVE);
@@ -229,7 +265,13 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				preventDisconnectionResponse();
 			}
 			else if (command == TicTacToeHelper.COMMAND_MAKEMOVE) {
-				makeMoveRequest(arguments);
+				try {
+					socket.setSoTimeout(10000);
+					makeMoveRequest(arguments);
+					socket.setSoTimeout(0);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				}
 			}
 			else if (command == TicTacToeHelper.COMMAND_RESETGAME) {
 				resetGameRequest();
@@ -417,13 +459,29 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
                 wr.println(protocol.toString());
                 wr.println();
                 wr.flush();
+                
                 BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                    System.out.println(str);
-                    setResult(str);
-                    getActivity().runOnUiThread(callback);
-                }
-				
+                int i = rd.read();
+                if(i != -1) {
+                	char c = (char) i;
+	                while ((str = c + rd.readLine()) != null && !str.trim().equals("")) {
+	                	c = '\0';
+	                    System.out.println(str);
+	                    setResult(str);
+	                    getActivity().runOnUiThread(callback);
+	                }
+				}
+				else {
+					// Server is down, display finish game
+					try {
+		                JSONObject cancelCommand = new JSONObject();
+						cancelCommand.put("Request", "ServerUnreachable");
+			            setResult(cancelCommand.toString());
+			            getActivity().runOnUiThread(callback);
+					} catch (JSONException ex) {
+						ex.printStackTrace();
+					}					
+				}
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -459,22 +517,6 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				e.printStackTrace();
 			} finally {
 				isCalling = false;
-			}
-		}
-		
-		public void isListening(){
-			String str;
-			try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            
-				while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-				    System.out.println(str);
-				    setResult(str);
-				    getActivity().runOnUiThread(callback);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 

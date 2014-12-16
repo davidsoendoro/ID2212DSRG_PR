@@ -14,11 +14,13 @@ import java.util.HashMap;
  * @author davidsoendoro
  */
 public class TicTacToeGame {
+    private int id;
     private int arr[][] = 
 	    {{0,0,0},{0,0,0},{0,0,0}};	// array which stores the movements made.
-    int game_mode = 1;	// default 0 : h Vs h ; 1 : h Vs Comp
-    int player = 1;	// sets the player no. to 1 by default.
+    int game_mode;	// default 0 : h Vs h ; 1 : h Vs Comp
+    int player = 2;	// sets the player no. to 2 by default.
     int count = 0;	
+    int turn = 1; //= 1 for player 1's turn, = 2 for player 2's turn
     int map_arr[][] = 
             {{1,1,1},{1,1,1},{1,1,1}};	// friend and enemy map initialization.
 
@@ -30,19 +32,50 @@ public class TicTacToeGame {
     int score_player_2 = 0;
     
     private int restartNum = 0;
+    private boolean isP1Restarted = false;
+    private boolean isP2Restarted = false;
     
-    private Socket opponentSocket;
+    private Socket player1Socket;
+    private Socket player2Socket;
     private String message = "";
 
     public TicTacToeGame() {
+        this.id = 0;
+        this.game_mode = 1;
     }
 
-    public Socket getOpponentSocket() {
-        return opponentSocket;
+    public TicTacToeGame(int id, Socket socket) {
+        this.id = id;
+        this.game_mode = 0;
+        this.player1Socket = socket;
     }
 
-    public void setOpponentSocket(Socket opponentSocket) {
-        this.opponentSocket = opponentSocket;
+    public int getId() {
+        return id;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+    
+    public int getGame_mode() {
+        return game_mode;
+    }
+    
+    public Socket getPlayer1Socket() {
+        return player1Socket;
+    }
+
+    public void setPlayer1Socket(Socket player1Socket) {
+        this.player1Socket = player1Socket;
+    }
+
+    public Socket getPlayer2Socket() {
+        return player2Socket;
+    }
+
+    public void setPlayer2Socket(Socket player2Socket) {
+        this.player2Socket = player2Socket;
     }
     
     public String getStringRepresentation() {
@@ -66,6 +99,7 @@ public class TicTacToeGame {
         jsonObject.addProperty("scoreP1", score_player_1);
         jsonObject.addProperty("scoreP2", score_player_2);
         jsonObject.addProperty("message", message);
+        jsonObject.addProperty("turn", turn);
 
         return jsonObject.toString();
     }
@@ -83,17 +117,30 @@ public class TicTacToeGame {
                 parameters.put(keyValue[0], "");
             }
         }
+        
+        String param;
+        if((param = parameters.get("word")) != null) {
+        }
     }
     
-    public String makeMove(String position) {
-        count = incrementCount();
-        player = 2;
-        return afterMove(position);
+    public boolean isStartable() {
+        return (player1Socket != null && player2Socket != null);  
     }
     
-    public String afterMove(String position) {
-    	int pos = 0;
-    	boolean result = false;
+    public void makeMove(String position, int player) {
+        System.out.println(player + " vs " + this.turn);
+        if(player == turn) {
+            this.player = player;
+            afterMove(position);
+        }
+        else {
+            message = "Not your turn!";
+        }
+    }
+    
+    public void afterMove(String position) {
+    	int pos;
+    	boolean result;
   
     	pos = (int) position.charAt(0) - 48;		// char to integer conversion.
 	
@@ -124,19 +171,19 @@ public class TicTacToeGame {
             if (player == 1) {
                 score_player_1 += 1;
                 if (game_mode == 0) {
-                    message = "Congrats 1 wins !!";
+                    message = "Congrats player 1 wins !!";
                 }
                 else {
-                    message = "Computer Wins !!";
+                    message = "Congrats You have won !!";
                 }
             }
             else {
                 score_player_2 += 1;
                 if (game_mode == 0) {	// human vs human  
-                    message = "Congrats 2 wins !!";
+                    message = "Congrats player 2 wins !!";
                 }
                 else {	// human vs computer
-                    message = "Congrats You have won !!";
+                    message = "Computer Wins !!";
                 }
             }
     	}
@@ -146,9 +193,9 @@ public class TicTacToeGame {
         else {
             message = "";
             // Next Player select section.
-            if ((game_mode == 1) && (player == 2) && (result == false)) {  // player 2 : next is computer (player 1)'s chance.
+            if ((game_mode == 1) && (player == 1) && (result == false)) {  // player 2 : next is computer (player 1)'s chance.
                 // CompGame - plays the computer's chance.
-                String res = CompGame();
+                CompGame();
                 // Check for the game result.
                 result = result_check(player);
 
@@ -160,8 +207,8 @@ public class TicTacToeGame {
                         if (game_mode == 0) {
                             message = "Congrats 1 wins !!";
                         }
-                        else {
-                            message = "Computer Wins !!";
+                        else {  // human vs computer
+                            message = "Congrats You have won !!";
                         }
                     }
                     else {
@@ -169,23 +216,19 @@ public class TicTacToeGame {
                         if (game_mode == 0) {	// human vs human  
                             message = "Congrats 2 wins !!";
                         }
-                        else {	// human vs computer
-                            message = "Congrats You have won !!";
+                        else {	
+                            message = "Computer Wins !!";
                         }
                     }
                 }
                 else if ((result == false) && arr_isFull()) {
                     message = "    Game Draw !    "; // leave the space, or else dialog becomes cramped.
                 }
-                
-                return res;
             }
             else { 
-                return "";
+                turn = (turn % 2) + 1;
             } // continue game.
         }    	
-        
-        return "";
     }
     
     /**
@@ -272,17 +315,17 @@ public class TicTacToeGame {
     /**
      * Master function for the computer's play (AI).
      */
-    public String CompGame() {
-    	player = 1;
+    public void CompGame() {
+    	player = 2;
     	count++;
     	analysis_array();
-    	if (easy_move_win() == true)
-            return message;
-    	else if (easy_move_block() == true)
-            return message;
-    	else {
+    	if (easy_move_win() == true) {
+        } 
+        else if (easy_move_block() == true) {
+        } 
+        else {
             f_e_map();
-            return best_move();
+            best_move();
     	}    	
     }
 
@@ -570,8 +613,9 @@ public class TicTacToeGame {
     	// ------ end of analysis array initialization ------------- //
     }
 
-    public void reset() {
+    public void reset(int caller) {
         count = 0;
+        turn = 1;
         message = "";
         for (int j = 0; j < 3; j++) {
             for (int i = 0; i < 3; i++) {
@@ -586,8 +630,28 @@ public class TicTacToeGame {
             }
         }
         
-        if((restartNum++ % 2) == 0) {
-            CompGame();
+        System.out.println("RestartNum: " + restartNum);
+        if((restartNum % 2) == 0) {
+            if(game_mode == 0) {
+                turn = 2;
+            }
+            else {
+                CompGame();
+            }
+        }
+        if(caller == 1) {
+            isP1Restarted = true;
+        }
+        else if(caller == 2) {
+            isP2Restarted = true;
+        }
+        if(game_mode == 1) {
+            isP2Restarted = true;
+        }
+        if(isP1Restarted && isP2Restarted) {
+            isP1Restarted = false;
+            isP2Restarted = false;
+            restartNum++;
         }
     }
 

@@ -27,7 +27,7 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 
 	private Button buttonLobbyConnect;
 	private TextView textViewUserIp;
-//	private CheckBox checkBoxVsPlayer;
+	private boolean isServer = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,20 +64,17 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		}
 		
 		// Threading
-		if(TicTacToeHelper.game.getSocket() != null) {
-			if(v.getId() == R.id.button_lobby_create) {
-				TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
-				TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
-			}
-			else if(v.getId() == R.id.button_lobby_join) {
-				TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
-						ip, port);
-				TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
-				//TicTacToeHelper.game.joinGame();
-			}
+		if(v.getId() == R.id.button_lobby_create) {
+			TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
+			TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
+			isServer = true;
+			TicTacToeHelper.gameP2p.createGame(0);
 		}
-		else {
-			Toast.makeText(this, "Unable to connect!", Toast.LENGTH_SHORT).show();
+		else if(v.getId() == R.id.button_lobby_join) {
+			TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
+					ip, port);
+			TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
+			TicTacToeHelper.game.createGame(0);
 		}
 	}
 
@@ -95,15 +92,30 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 	 */
 	@Override
 	public void run() {
-		getDialog().dismiss();
+		if(getDialog() != null && getDialog().isShowing()) {
+			getDialog().dismiss();
+		}
 		
-		String result = TicTacToeHelper.game.getResult();
+		String result = "";
+		if(isServer) {
+			result = TicTacToeHelper.gameP2p.getResult();			
+		}
+		else {
+			result = TicTacToeHelper.game.getResult();			
+		}
 		try {
 			JSONObject resultObj = new JSONObject(result);
 			
-			if(resultObj.getString("Request").equals("NewSingleGame")) {
-				// Callback for NewSingleGame
-				Intent i = new Intent(TicTacToeLobbyP2P.this, TicTacToeOnline.class);
+			if(resultObj.getString("Request").equals("P2PcreateGame")) {
+				// Callback for P2PcreateGame
+				Intent i = new Intent(TicTacToeLobbyP2P.this, TicTacToeServer.class);
+				i.putExtra("mode", TicTacToeHelper.PVP_1stplayer);
+				startActivity(i);
+			}
+			else if(resultObj.getString("Request").equals("createGame")) {
+				// Callback for joinGame
+				Intent i = new Intent(this, TicTacToeOnline.class);
+				i.putExtra("mode", TicTacToeHelper.PVP_2ndplayer);
 				startActivity(i);
 			}
 		} catch (JSONException e) {
@@ -121,6 +133,7 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			}
 			else if(result.contains("waitForNewGame")) {
 				Intent i = new Intent(TicTacToeLobbyP2P.this, TicTacToeOnline.class);
+				i.putExtra("mode", TicTacToeHelper.PVP_1stplayer);
 				startActivity(i);
 			}
 			else if(result.contains("joinGame")) {
@@ -134,6 +147,7 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 				}
 				else {
 					Intent i = new Intent(TicTacToeLobbyP2P.this, TicTacToeOnline.class);
+					i.putExtra("mode", TicTacToeHelper.PVP_2ndplayer);
 					startActivity(i);				
 				}
 			}

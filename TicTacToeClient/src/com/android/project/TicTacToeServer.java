@@ -14,7 +14,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnable {
+public class TicTacToeServer extends TicTacToeGenericActivity implements Runnable {
 
 	private int mode = TicTacToeHelper.PVC;
 	private int currentState[][] = 
@@ -30,9 +30,8 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 			this.mode = getIntent().getIntExtra("mode", TicTacToeHelper.PVC);
 		}
 		
-		TicTacToeHelper.game.setActivity(this);
-		TicTacToeHelper.game.setCallback(this);
-//		TicTacToeHelper.game.preventDisconnection();
+		TicTacToeHelper.gameP2p.setActivity(this);
+		TicTacToeHelper.gameP2p.setCallback(this);
 		initiate();
 		
 		if(this.mode == TicTacToeHelper.PVP_2ndplayer) {
@@ -95,7 +94,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
         	ibutton.setClickable(false);
         	
         	// Increment Count on clicking the button.
-        	TicTacToeHelper.game.makeMove((String)ibutton.getTag());
+        	TicTacToeHelper.gameP2p.makeMove((String)ibutton.getTag());
         }
     };
 
@@ -103,7 +102,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 	public void onBackPressed() {
 		super.onBackPressed();
 		
-		TicTacToeHelper.game.cancelGame();
+		TicTacToeHelper.gameP2p.cancelGame();
 	}
 
 	@Override
@@ -111,30 +110,28 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 		System.out.println("CALLED");
 		if(getDialog() != null && getDialog().isShowing())
 			getDialog().dismiss();
-		String result = TicTacToeHelper.game.getResult();
+		String result = TicTacToeHelper.gameP2p.getResult();
 		
 		try {
 			JSONObject resultObj = new JSONObject(result);
 			String request = resultObj.getString("Request");
-			if(request.equals("MakeMove")) {
-				System.out.println("make move");
+			if(request.equals("P2PserverMove")) {
+				System.out.println("Server just make move!");
 				doGame(resultObj);
 				
 				String body = resultObj.getString("Body");
 				JSONObject bodyObj = new JSONObject(body);
-				Integer turn = bodyObj.getInt("turn");
 				String message = bodyObj.getString("message");
 				
 				if(message.length() == 0) {
-					if(turn == 1 && mode == TicTacToeHelper.PVP_2ndplayer) {
-						TicTacToeHelper.game.waitForOpponentMove();					
-					}
-					else if(turn == 2 && mode == TicTacToeHelper.PVP_1stplayer) {
-						TicTacToeHelper.game.waitForOpponentMove();
-					}
+					TicTacToeHelper.gameP2p.waitForOpponentMove();
 				}
 			}
-			else if(request.equals("ResetGame")) {
+			else if(request.equals("P2PclientMove")) {
+				System.out.println("Client just make move!");
+				doGame(resultObj);				
+			}
+			else if(request.equals("P2PresetGame")) {
 				initiate();
 				
 				doGame(resultObj);
@@ -142,20 +139,17 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 				String body = resultObj.getString("Body");
 				JSONObject bodyObj = new JSONObject(body);
 				Integer turn = bodyObj.getInt("turn");
-				if(turn == 1 && mode == TicTacToeHelper.PVP_2ndplayer) {
-					TicTacToeHelper.game.waitForOpponentMove();					
-				}
-				else if(turn == 2 && mode == TicTacToeHelper.PVP_1stplayer) {
-					TicTacToeHelper.game.waitForOpponentMove();
+				if(turn == 2) {
+					TicTacToeHelper.gameP2p.waitForOpponentMove();
 				}
 			}
-			else if(request.equals("CancelGame")) {
+			else if(request.equals("P2PcancelGame")) {
 				String body = resultObj.getString("Body");
 				JSONObject bodyObj = new JSONObject(body);
 				Integer scoreP1 = bodyObj.getInt("scoreP1");
 				Integer scoreP2 = bodyObj.getInt("scoreP2");
 
-				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeOnline.this);
+				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeServer.this);
 
 				alert.setTitle("Opponent disconnected!");
 				alert.setMessage("Opponent is disconnected! "
@@ -165,23 +159,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 					
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						TicTacToeOnline.this.finish();
-					}
-				});
-				
-				alert.create().show();				
-			}
-			else if(request.equals("ServerUnreachable")) {
-				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeOnline.this);
-
-				alert.setTitle("Opponent disconnected!");
-				alert.setMessage("Opponent is disconnected!");
-				
-				alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-					
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						TicTacToeOnline.this.finish();
+						TicTacToeServer.this.finish();
 					}
 				});
 				
@@ -189,7 +167,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 			}
 		} catch (JSONException e) {
 			if(result.contains("preventDisconnection")) {
-				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeOnline.this);
+				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeServer.this);
 				
 				alert.setTitle("Opponent disconnected!");
 				alert.setMessage("Opponent is disconnected! You win the game!");
@@ -198,8 +176,8 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 					
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						TicTacToeOnline.this.finish();
-						TicTacToeHelper.game.cancelGame();
+						TicTacToeServer.this.finish();
+						TicTacToeHelper.gameP2p.cancelGame();
 					}
 				});
 				
@@ -237,7 +215,7 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 	        					if(message.toLowerCase().contains("game") ||
 	        							message.toLowerCase().contains("won") ||
 	        							message.toLowerCase().contains("wins")) {
-	        						TicTacToeHelper.game.resetGame();
+	        						TicTacToeHelper.gameP2p.resetGame();
 	        					}
 	        				}
 	        			});

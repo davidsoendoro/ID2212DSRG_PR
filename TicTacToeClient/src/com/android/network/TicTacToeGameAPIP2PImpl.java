@@ -7,13 +7,10 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.network.handler.TictactoeHandler;
 import com.android.project.TicTacToeGenericActivity;
 import com.android.project.game.TicTacToeGame;
 import com.android.project.helper.TicTacToeHelper;
@@ -22,7 +19,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 
 public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 
@@ -47,6 +46,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		
 		try {
 			serverSocket = new ServerSocket(port);
+			serverSocket.setReuseAddress(true);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -93,9 +93,6 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 
 	@Override
 	public void createGame(int id) {
-		while(isCalling);
-		isCalling = true;
-		
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Wait for Opponent", "Now waiting..."));
 		
@@ -131,7 +128,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	}
 
 	@Override
-	public void cancelGame() {
+	public void cancelGame() {		
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CANCELGAME);
 		connectionThread.start();
@@ -145,6 +142,45 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_WAITFORNEWGAME);
 		connectionThread.start();
+	}
+
+	@Override
+	public void waitForOpponentMove() {
+		ProgressDialog dialog = new ProgressDialog(getActivity());
+		dialog.setCancelable(true);
+		dialog.setTitle("Wait for Opponent");
+		dialog.setMessage("Now Waiting...");
+		dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			
+			@Override
+			public void onCancel(final DialogInterface dialog) {
+				AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+				alert.setTitle("Quit?");
+				alert.setMessage("Are you sure you want to quit the game?");
+				
+				alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface alertDialog, int which) {
+						TicTacToeHelper.gameP2p.cancelGame();
+						getActivity().finish();
+					}
+				});
+				alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface alertDialog, int which) {
+						alertDialog.dismiss();
+						getActivity().getDialog().show();
+					}
+				});
+				
+				alert.create().show();
+			}
+		});
+		getActivity().setDialog(dialog);
+		getActivity().getDialog().show();
 	}
 
 	@Override
@@ -201,11 +237,29 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		public void run() {
 			if(this.command == TicTacToeHelper.COMMAND_CREATEGAME) {
 				try {
-					clientSocket= serverSocket.accept();
+					if(serverSocket == null)
+						serverSocket = new ServerSocket(port);
+					clientSocket = serverSocket.accept();
 					readString();
 				} catch (IOException e) {
 					e.printStackTrace();
-				}				
+				}
+			}
+			else if(this.command == TicTacToeHelper.COMMAND_MAKEMOVE) {
+				serverMakeMoveString(arguments);
+			}
+			else if(this.command == TicTacToeHelper.COMMAND_RESETGAME) {
+				serverResetGameString();
+			}
+			else if(this.command == TicTacToeHelper.COMMAND_CANCELGAME) {
+				opponentDisconnected();
+
+				try {
+					clientSocket.close();
+					serverSocket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -234,9 +288,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	                if(disconnectCounter >= DISCONNECT_TIME) {
 	                    isEnded = true;
 	                    
-	                    if(tictactoeGame.getOpponentSocket() != null) {
-	                    	opponentDisconnected(tictactoeGame.getOpponentSocket());                        
-	                    }
+	                    displayOpponentDisconnected();
 	                    
 	                    writeOutput("USER IS DISCONNECTED!");
 	                    break;
@@ -282,17 +334,13 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	    private void executeAPI(JsonObject requestObject) {
 	        JsonElement element = requestObject.get("Request");
 	        String str = element.getAsString();
-	        if(str.contains("startGame")) {
-	            startGameString();
+	        if(str.equals("createGame")) {
+	            JsonElement bodyElement = requestObject.get("Body");
+	            JsonObject body = bodyElement.getAsJsonObject();
+	            createGameString(body);
 	        }
-	        else if(str.contains("endGame")) {
-	            endGameString();
-	        }
-	        else if(str.contains("joinGame")) {
-	            joinGameString();
-	        }
-	        else if(str.equals("NewSingleGame")) {
-	            newSingleGameString();
+	        else if(str.contains("cancelGame")) {
+	            cancelGameString();
 	        }
 	        else if(str.equals("MakeMove")) {
 	            JsonElement bodyElement = requestObject.get("Body");
@@ -304,148 +352,50 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	        }
 	    }
 
-	    /**
-	     * Handler that will be called if server receives "startGame" message
-	     * If it is the start of the game it will initialize hangmanGame
-	     * This function will send back score, attempt, and new word to client
-	     */
-	    private void startGameString() {
-	        printWriter = null;
-	            
+	    private void serverMakeMoveString(String position) {
+	    	printWriter = null;
+            
 	        try {
 	            // Do the process
-	            startGame();
-	                        
-	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(clientSocket.getOutputStream());
-	            
-	            // Construct header
-	            String header = "200 OK";
-	            
-	            // Construct body
-	            String body = TicTacToeGameAPIP2PImpl.this.tictactoeGame.
-	            		getStringRepresentation();
-	            
-	            printWriter.println(header); // send GET request
-	            printWriter.println();
-	            printWriter.println(body);
-	            printWriter.println();
-	            
-	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
-	        }
-	    }
-
-	    /**
-	     * Handler that will be called if server receives "endGame" message
-	     * Server will reply with 200 OK and empty body
-	     * Server will close the socket and stop the thread
-	     */
-	    private void endGameString() {        
-	        printWriter = null;
-	            
-	        try {
-	            // Do the process
-	            endGame();
-	                        
-	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(clientSocket.getOutputStream());
-	            
-	            // Construct header
-	            String header = "200 OK";
-	            
-	            // Construct body
-	            String body = "";
-	            
-	            printWriter.println(header); // send GET request
-	            printWriter.println();
-	            printWriter.println(body);
-	            printWriter.println();
-	            
-	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
-	        }
-	    }
-
-	    private void joinGameString() {
-	        printWriter = null;
-	            
-	        try {
-	            // Do the process
-	            String header, body;
-	            if(joinGame()) {
-	                // Construct header
-	                header = "200 OK";
-
-	                // Construct body
-	                body = TicTacToeGameAPIP2PImpl.this.tictactoeGame.getStringRepresentation();
-	            
-	                // communicate to the other socket
-	                printWriter = new PrintWriter(
-	                		TicTacToeGameAPIP2PImpl.this.tictactoeGame.getOpponentSocket().getOutputStream());
-
-	                printWriter.println(header); // send GET request
-	                printWriter.println();
-	                printWriter.println(body);
-	                printWriter.println();
-
-	                printWriter.flush();
-	            }
-	            else {
-	                // Construct header
-	                header = "404 Not Found";
-
-	                // Construct body
-	                body = "Vacant games not found";
-	            }
-	                        
-	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(clientSocket.getOutputStream());
-	                        
-	            printWriter.println(header); // send GET request
-	            printWriter.println();
-	            printWriter.println(body);
-	            printWriter.println();
-	            
-	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
-	        }
-	    }
-
-	    /**
-	     * Handler that will be called if server receives "startGame" message
-	     * If it is the start of the game it will initialize hangmanGame
-	     * This function will send back score, attempt, and new word to client
-	     */
-	    private void newSingleGameString() {
-	        printWriter = null;
-	            
-	        try {
-	            // Do the process
-	            newSingleGame();
-	                        
-	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(clientSocket.getOutputStream());
+	            serverMakeMove(position);
 	            
 	            // Construct header
 	            T3Protocol protocol = new T3Protocol();
-	            protocol.setRequest("NewSingleGame");
+	            protocol.setRequest("MakeMove");
 	            // Construct body
-	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.getStringRepresentation()));
+	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.
+	            		getStringRepresentation()));
+
+	            // communicate with a client via clientSocket
+	            writeOutput("TicTacToe Game Mode: " + TicTacToeGameAPIP2PImpl.
+	            		this.tictactoeGame.getGame_mode());
 	            
-	            printWriter.println(protocol.toString());
-	            printWriter.println();
-	            
-	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
-	        } catch (JSONException e) {
-				// TODO Auto-generated catch block
+                // Return result to player
+                printWriter = new PrintWriter(clientSocket.getOutputStream());
+        
+                printWriter.println(protocol.toString());
+                printWriter.println();
+
+                printWriter.flush();
+
+	            // Run callback of MakeMove
+	            JSONObject p2pCommand = new JSONObject();
+	            p2pCommand.put("Request", "P2PserverMove");
+	            p2pCommand.put("Body", TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation());
+                setResult(p2pCommand.toString());
+                getActivity().runOnUiThread(callback);
+	        } catch (IOException e) {
 				e.printStackTrace();
+	        } catch (JSONException e) {
+				e.printStackTrace();
+			} finally {
+				isCalling = false;
 			}
+	    }
+	    
+	    private void serverMakeMove(String position) {
+	        TicTacToeGameAPIP2PImpl.this.tictactoeGame.makeMove(position, 1);
 	    }
 
 	    private void makeMoveString(JsonObject body) {
@@ -454,26 +404,68 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	        try {
 	            // Do the process
 	            makeMove(body);
-	                        
-	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(clientSocket.getOutputStream());
 	            
 	            // Construct header
 	            T3Protocol protocol = new T3Protocol();
 	            protocol.setRequest("MakeMove");
 	            // Construct body
-	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.getStringRepresentation()));
+	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.
+	            		getStringRepresentation()));
+
+	            // communicate with a client via clientSocket
+	            writeOutput("TicTacToe Game Mode: " + TicTacToeGameAPIP2PImpl.
+	            		this.tictactoeGame.getGame_mode());
 	            
-	            printWriter.println(protocol.toString());
-	            printWriter.println();
+	            // TODO Wait for server input
 	            
-	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+                // Return result to player
+                printWriter = new PrintWriter(clientSocket.getOutputStream());
+        
+                printWriter.println(protocol.toString());
+                printWriter.println();
+
+                printWriter.flush();
+
+	            // Run callback of MakeMove
+	            JSONObject p2pCommand = new JSONObject();
+	            p2pCommand.put("Request", "P2PclientMove");
+	            p2pCommand.put("Body", TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation());
+                setResult(p2pCommand.toString());
+                getActivity().runOnUiThread(callback);
+	        } catch (IOException e) {
+				e.printStackTrace();
 	        } catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+	    }
+	    
+	    private void makeMove(JsonObject body) {
+	        JsonElement element = body.get("position");
+	        String position = element.getAsString();
+	        TicTacToeGameAPIP2PImpl.this.tictactoeGame.makeMove(position, 2);
+	    }
+
+	    private void serverResetGameString() {
+            try {
+    	    	serverResetGame();
+
+    	    	// Run callback of MakeMove
+                JSONObject p2pCommand = new JSONObject();
+				p2pCommand.put("Request", "P2PresetGame");
+	            p2pCommand.put("Body", TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation());
+	            setResult(p2pCommand.toString());
+	            getActivity().runOnUiThread(callback);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} finally {
+				isCalling = false;
+			}
+	    }
+	    
+	    private void serverResetGame() {
+	    	TicTacToeGameAPIP2PImpl.this.tictactoeGame.reset(1);
 	    }
 	    
 	    private void resetGameString() {
@@ -490,34 +482,130 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	            T3Protocol protocol = new T3Protocol();
 	            protocol.setRequest("ResetGame");
 	            // Construct body
-	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.getStringRepresentation()));
+	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation()));
 	            
 	            printWriter.println(protocol.toString());
 	            printWriter.println();
 	            
 	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+	        } catch (IOException e) {
+				e.printStackTrace();
 	        } catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	    }
 	    
-	    private void opponentDisconnected(Socket playerSocket) {
+	    private void resetGame() {
+	    	TicTacToeGameAPIP2PImpl.this.tictactoeGame.reset(2);
+	    }
+
+	    private void displayOpponentDisconnected() {
+	    	// TODO Showing an alert that opponent is disconnected
+
+            // Run callback to move to TicTacToeOnline Activity
+            try {
+                JSONObject p2pCommand = new JSONObject();
+				p2pCommand.put("Request", "P2PcancelGame");
+	            p2pCommand.put("Body", TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation());
+	            setResult(p2pCommand.toString());
+	            getActivity().runOnUiThread(callback);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+	    }
+
+	    private void opponentDisconnected() {
 	        printWriter = null;
 	            
 	        try {
 	            // Do the process
 	                        
 	            // communicate with a client via clientSocket
-	            printWriter = new PrintWriter(playerSocket.getOutputStream());
+	            printWriter = new PrintWriter(clientSocket.getOutputStream());
+	            
+	            // Construct header
+	            T3Protocol protocol = new T3Protocol();
+	            protocol.setRequest("CancelGame");
+	            // Construct body
+	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation()));
+	            
+	            printWriter.println(protocol.toString());
+	            printWriter.println();
+	            
+	            printWriter.flush();
+	        } catch (IOException e) {
+	        	e.printStackTrace();
+	        } catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	       
+	    // VS PLAYER
+
+	    private void createGameString(JsonObject body) {
+	        printWriter = null;
+	        try {
+	            // Do the process
+	            createGame(body);
+	            
+	            // communicate with a client via clientSocket
+	            printWriter = new PrintWriter(clientSocket.getOutputStream());
+	            
+	            // Construct header
+	            T3Protocol protocol = new T3Protocol();
+	            protocol.setRequest("createGame");
+	            // Construct body
+	            protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation()));
+	            
+	            printWriter.println(protocol.toString());
+	            printWriter.println();
+	            
+	            printWriter.flush();
+	            
+	            // Run callback to move to TicTacToeOnline Activity
+	            JSONObject p2pCommand = new JSONObject();
+	            p2pCommand.put("Request", "P2PcreateGame");
+	            p2pCommand.put("Body", TicTacToeGameAPIP2PImpl.this.
+	            		tictactoeGame.getStringRepresentation());
+                setResult(p2pCommand.toString());
+                getActivity().runOnUiThread(callback);
+	        } catch (IOException e) {
+				e.printStackTrace();
+	        } catch (JSONException e) {
+				e.printStackTrace();
+			}
+	    }
+	    
+	    private void createGame(JsonObject body) {
+	        int id = body.get("GameId").getAsInt();
+	        
+	        // Construct new HangmanGame
+	        if(TicTacToeGameAPIP2PImpl.this.tictactoeGame == null) {
+	            TicTacToeGameAPIP2PImpl.this.tictactoeGame = new TicTacToeGame(id, 
+	            		clientSocket);
+	        }
+	    }
+
+	    private void cancelGameString() {   
+	        printWriter = null;
+	            
+	        try {
+	            // Do the process
+	            cancelGame();
+	                        
+	            // communicate with a client via clientSocket
+	            printWriter = new PrintWriter(clientSocket.getOutputStream());
 	            
 	            // Construct header
 	            String header = "200 OK";
 	            
 	            // Construct body
-	            String body = "Opponent disconnected, you won!";
+	            String body = "";
 	            
 	            printWriter.println(header); // send GET request
 	            printWriter.println();
@@ -525,250 +613,26 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	            printWriter.println();
 	            
 	            printWriter.flush();
-	        } catch (IOException ex) {
-	            Logger.getLogger(TictactoeHandler.class.getName()).log(Level.SEVERE, null, ex);
+	        } catch (IOException e) {
+				e.printStackTrace();
 	        }
 	    }
 
-	    private void startGame() {
-	        // Construct new HangmanGame
-	        if(TicTacToeGameAPIP2PImpl.this.tictactoeGame == null) {
-	        	TicTacToeGameAPIP2PImpl.this.tictactoeGame = new TicTacToeGame();
-	        	TicTacToeGameAPIP2PImpl.this.tictactoeGame.setOpponentSocket(clientSocket);
-	        }
-	        else {
-	            // New TicTacToeGame
-//	            this.tictactoeGame.newWord();
-	        }
-	    }
-
-	    private void endGame() {
-	        // EndGame
-	        isEnded = true;
-	    }
-	    
-	    private boolean joinGame() {
-	        // Construct new HangmanGame
-            return false;
-	    }
-
-	    private void newSingleGame() {
-	        // Construct new HangmanGame
-	        if(TicTacToeGameAPIP2PImpl.this.tictactoeGame == null) {
-	        	TicTacToeGameAPIP2PImpl.this.tictactoeGame = new TicTacToeGame();
-	        }
-	        else {
-	            // New TicTacToeGame
-//	            this.tictactoeGame.newWord();
-	        }
-	    }
-
-	    private String makeMove(JsonObject body) {
-	        JsonElement element = body.get("position");
-	        String position = element.getAsString();
-	        String retVal = TicTacToeGameAPIP2PImpl.this.tictactoeGame.makeMove(position);
-	        return retVal;
-	    }
-
-	    private void resetGame() {
-	    	TicTacToeGameAPIP2PImpl.this.tictactoeGame.reset();
-	    }
-
-		private void waitForNewGameResponse() {
-			String str;
-			BufferedReader rd;
-			try {
-				rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-	            }
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-                    setResult(command + " - " + "waitForNewGame" + " - " + str);
-	                getActivity().runOnUiThread(callback);
-	            }
+	    private void cancelGame() {
+	    	// Display opponent disconnected
+	    	try {
+				clientSocket.close();
+		    	serverSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-
-		public void preventDisconnectionResponse() {
-			String str;
-			BufferedReader rd;
-			try {
-				rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-	            }
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-                    setResult(command + " - " + "preventDisconnection" + " - " + str);
-	                getActivity().runOnUiThread(callback);
-	            }
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		private void createGameRequest() {
-			String str;
-			try {
-				clientSocket= serverSocket.accept();
-                // communicate with a client via clientSocket
-                printWriter = new PrintWriter(clientSocket.getOutputStream());
-                
-                // Construct header
-                T3Protocol protocol = new T3Protocol();
-                protocol.setRequest("NewSingleGame");
-                // Construct body
-                protocol.setBody(new JSONObject(TicTacToeGameAPIP2PImpl.this.tictactoeGame.getStringRepresentation()));
-                
-                printWriter.println(protocol.toString());
-                printWriter.println();
-                
-                printWriter.flush();
-				
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				isCalling = false;
-			}
-		}
-
-		private void createSingleGameRequest() {
-			String completeStr = "";
-			String str = "";
-			try {				
-				// Prepare Message
-				T3Protocol protocol = new T3Protocol();
-				protocol.setRequest("NewSingleGame");
-				
-				PrintWriter wr = new PrintWriter(clientSocket.getOutputStream());
-                wr.println(protocol.toString());
-                wr.println();
-                wr.flush();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                    System.out.println(str);
-                    completeStr += str;
-                }			
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			finally {
-                setResult(completeStr);
-                getActivity().runOnUiThread(callback);	
-				isCalling = false;
-			}
-		}
-
-		private void joinGameRequest() {
-			String str, fullMsg = "";
-			try {				
-				PrintWriter wr = new PrintWriter(clientSocket.getOutputStream());
-                wr.println("GET joinGame HTTP/1.0");
-                wr.println();
-                wr.flush();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                	fullMsg += str;
-                    System.out.println(str);
-                }
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                	fullMsg += str;
-                    System.out.println(str);
-                    setResult(command + " - " + "joinGame" + " - " + fullMsg);
-                    getActivity().runOnUiThread(callback);
-                }
-				
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				isCalling = false;
-			}
-		}
-
-		private void makeMoveRequest(String position) {
-			String str;
-			try {				
-				// Prepare Message
-				T3Protocol protocol = new T3Protocol();
-				protocol.setRequest("MakeMove");
-				
-				JSONObject body = new JSONObject();
-				body.put("position", position);
-				protocol.setBody(body);
-				
-				PrintWriter wr = new PrintWriter(clientSocket.getOutputStream());
-                wr.println(protocol.toString());
-                wr.println();
-                wr.flush();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                    System.out.println(str);
-                    setResult(str);
-                    getActivity().runOnUiThread(callback);
-                }
-				
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} finally {
-				isCalling = false;
-			}
-		}
-
-		private void resetGameRequest() {
-			String str;
-			try {				
-				// Prepare Message
-				T3Protocol protocol = new T3Protocol();
-				protocol.setRequest("ResetGame");
-								
-				PrintWriter wr = new PrintWriter(clientSocket.getOutputStream());
-                wr.println(protocol.toString());
-                wr.println();
-                wr.flush();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-                    System.out.println(str);
-                    setResult(str);
-                    getActivity().runOnUiThread(callback);
-                }
-				
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				isCalling = false;
-			}
-		}
+	    }
 
 	}
 
 	public void writeOutput(String string) {
 		System.out.println(string);
-	}
-
-	@Override
-	public void waitForOpponentMove() {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

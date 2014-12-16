@@ -48,7 +48,6 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 			getDialog().dismiss();
 		}
 
-
 		try {
 			if(flag==1) {
 				JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
