@@ -6,6 +6,7 @@
 package com.tictactoe.model;
 
 import com.tictactoe.model.jpa.Game;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -29,7 +30,11 @@ public class GameFacade extends AbstractFacade<Game> {
     public GameFacade() {
         super(Game.class);
     }
-
+    
+    public List getValidGames() {
+        return em.createNamedQuery("Game.findByCount").setParameter("count", 1).getResultList();
+    }
+    
     public int insertGame(String name) {
         Game g = new Game(null, name, 1);
         em.persist(g);

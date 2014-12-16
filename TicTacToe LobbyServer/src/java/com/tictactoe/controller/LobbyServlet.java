@@ -102,7 +102,7 @@ public class LobbyServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             JsonObject jsonObject = new JsonObject();
             
-            List<Game> games = gameFacade.findAll();
+            List<Game> games = gameFacade.getValidGames();
             Gson gson = new Gson();
             JsonElement element = gson.toJsonTree(games, 
                     new TypeToken<List<Game>>(){}.getType());
