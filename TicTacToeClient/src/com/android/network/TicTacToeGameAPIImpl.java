@@ -131,8 +131,24 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		while(isCalling);
 		isCalling = true;
 
+		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+				"Wait for Opponent", "Now Waiting..."));
+		
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_WAITFORNEWGAME);
+		connectionThread.start();
+	}
+
+	@Override
+	public void waitForOpponentMove() {
+		while(isCalling);
+		isCalling = true;
+
+		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+				"Wait for Opponent", "Now Waiting..."));
+		
+		ConnectionThread connectionThread = new ConnectionThread();
+		connectionThread.setCommand(TicTacToeHelper.COMMAND_WAITFORMOVE);
 		connectionThread.start();
 	}
 
@@ -206,6 +222,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			else if (command == TicTacToeHelper.COMMAND_WAITFORNEWGAME) {
 				waitForNewGameResponse();
 			}
+			else if (command == TicTacToeHelper.COMMAND_WAITFORMOVE) {
+				waitForOpponentMoveResponse();
+			}
 			else if (command == TicTacToeHelper.COMMAND_PREVENTDISCONNECTION) {
 				preventDisconnectionResponse();
 			}
@@ -214,6 +233,24 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 			else if (command == TicTacToeHelper.COMMAND_RESETGAME) {
 				resetGameRequest();
+			}
+		}
+
+		private void waitForOpponentMoveResponse() {
+			String str;
+			BufferedReader rd;
+			try {
+				rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
+	                System.out.println(str);
+                    setResult(str);
+	                getActivity().runOnUiThread(callback);
+	            }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				isCalling = false;
 			}
 		}
 
@@ -241,15 +278,14 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
 	                System.out.println(str);
-	            }
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-                    setResult(command + " - " + "waitForNewGame" + " - " + str);
+                    setResult(str);
 	                getActivity().runOnUiThread(callback);
 	            }
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				isCalling = false;
 			}
 		}
 
@@ -286,6 +322,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
                 wr.println(protocol.toString());
                 wr.println();
                 wr.flush();
+
                 BufferedReader rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while ((str = rd.readLine()) != null && !str.trim().equals("")) {
                     System.out.println(str);

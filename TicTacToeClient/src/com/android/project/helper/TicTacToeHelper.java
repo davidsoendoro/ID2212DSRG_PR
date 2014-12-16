@@ -18,10 +18,15 @@ public class TicTacToeHelper {
 	
 	public static final int COMMAND_WAITFORNEWGAME = 10;
 	public static final int COMMAND_PREVENTDISCONNECTION = 11;
+	public static final int COMMAND_WAITFORMOVE = 12;
 
 	public static final int COMMAND_MAKEMOVE = 20;
 	public static final int COMMAND_RESETGAME = 21;
 
 	public static final int COMMAND_GETGAMELIST = 30;
+
+	public static final int PVC = 0;
+	public static final int PVP_1stplayer = 1;
+	public static final int PVP_2ndplayer = 2;
 
 }

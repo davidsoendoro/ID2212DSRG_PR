@@ -50,16 +50,16 @@ public final class R {
         public static final int b7=0x7f050016;
         public static final int b8=0x7f050015;
         public static final int b9=0x7f050014;
-        public static final int button1=0x7f05000a;
-        public static final int button2=0x7f050009;
-        public static final int button_lobby_create=0x7f050006;
-        public static final int button_lobby_join=0x7f050005;
+        public static final int button_create=0x7f05000a;
+        public static final int button_join=0x7f050009;
+        public static final int button_lobby_create=0x7f050005;
+        public static final int button_lobby_join=0x7f050008;
         public static final int editText1=0x7f05000b;
         public static final int editText_lobby_ip=0x7f050003;
         public static final int editText_lobby_port=0x7f050004;
         public static final int layout_id=0x7f05000c;
         public static final int layout_root=0x7f050018;
-        public static final int list=0x7f050007;
+        public static final int list=0x7f050006;
         public static final int name=0x7f050019;
         public static final int namep1=0x7f05001b;
         public static final int namep2=0x7f05001c;
@@ -71,7 +71,7 @@ public final class R {
         public static final int quit=0x7f050021;
         public static final int scoreboard=0x7f050017;
         public static final int startbutton=0x7f050000;
-        public static final int textView_lobby_ip=0x7f050008;
+        public static final int textView_lobby_ip=0x7f050007;
         public static final int textView_lobby_title=0x7f050002;
         public static final int title=0x7f05000d;
     }

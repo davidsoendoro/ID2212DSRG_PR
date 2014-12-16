@@ -28,7 +28,7 @@ public class TicTacToeGameServer {
     private static ArrayList<Socket> clientSockets;
     private static ServerSocket serverSocket;
     public static ArrayList<TicTacToeGame> vacantGames;
-    public static HashMap<Integer,TictactoeHandler> map=new HashMap<>();
+    public static HashMap<Integer,TicTacToeGame> map=new HashMap<>();
     
     /**
      * @param args the command line arguments

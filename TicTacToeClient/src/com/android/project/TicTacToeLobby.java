@@ -16,15 +16,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
 public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickListener, Runnable, OnCancelListener {
 
 	private Button buttonLobbyConnect;
-//	private CheckBox checkBoxVsPlayer;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -34,14 +32,11 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		
 		buttonLobbyConnect = (Button) findViewById(R.id.button_lobby_create);
 		buttonLobbyConnect.setOnClickListener(TicTacToeLobby.this);
-		Button buttonLobbyJoin = (Button) findViewById(R.id.button_lobby_join);
-		buttonLobbyJoin.setOnClickListener(TicTacToeLobby.this);
-//		checkBoxVsPlayer = (CheckBox) findViewById(R.id.checkBox_vsplayer);
 	}
 
 	@Override
 	public void onClick(View v) {
-		String ip = "130.229.154.233";
+		String ip = "192.168.1.18";
 		int port = 8090;
 		
 		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);

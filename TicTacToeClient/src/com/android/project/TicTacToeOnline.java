@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import com.android.project.helper.TicTacToeHelper;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnable {
 
+	private int mode = TicTacToeHelper.PVC;
 	private int currentState[][] = 
 	    {{0,0,0},{0,0,0},{0,0,0}};	// array which stores the movements made.
 	
@@ -24,10 +26,18 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 		
 		setContentView(R.layout.main_online);
 		
+		if(getIntent().hasExtra("mode")) {
+			this.mode = getIntent().getIntExtra("mode", TicTacToeHelper.PVC);
+		}
+		
 		TicTacToeHelper.game.setActivity(this);
 		TicTacToeHelper.game.setCallback(this);
 //		TicTacToeHelper.game.preventDisconnection();
 		initiate();
+		
+		if(this.mode == TicTacToeHelper.PVP_2ndplayer) {
+			TicTacToeHelper.game.waitForOpponentMove();
+		}
 	}
 	
 	private void initiate() {
@@ -108,12 +118,58 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 			String request = resultObj.getString("Request");
 			if(request.equals("MakeMove")) {
 				System.out.println("make move");
-				doGame(resultObj);				
+				doGame(resultObj);
+				
+				String body = resultObj.getString("Body");
+				JSONObject bodyObj = new JSONObject(body);
+				Integer turn = bodyObj.getInt("turn");
+				String message = bodyObj.getString("message");
+				
+				if(message.length() == 0) {
+					if(turn == 1 && mode == TicTacToeHelper.PVP_2ndplayer) {
+						TicTacToeHelper.game.waitForOpponentMove();					
+					}
+					else if(turn == 2 && mode == TicTacToeHelper.PVP_1stplayer) {
+						TicTacToeHelper.game.waitForOpponentMove();
+					}
+				}
 			}
 			else if(request.equals("ResetGame")) {
 				initiate();
 				
 				doGame(resultObj);
+				
+				String body = resultObj.getString("Body");
+				JSONObject bodyObj = new JSONObject(body);
+				Integer turn = bodyObj.getInt("turn");
+				if(turn == 1 && mode == TicTacToeHelper.PVP_2ndplayer) {
+					TicTacToeHelper.game.waitForOpponentMove();					
+				}
+				else if(turn == 2 && mode == TicTacToeHelper.PVP_1stplayer) {
+					TicTacToeHelper.game.waitForOpponentMove();
+				}
+			}
+			else if(request.equals("CancelGame")) {
+				String body = resultObj.getString("Body");
+				JSONObject bodyObj = new JSONObject(body);
+				Integer scoreP1 = bodyObj.getInt("scoreP1");
+				Integer scoreP2 = bodyObj.getInt("scoreP2");
+
+				AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeOnline.this);
+
+				alert.setTitle("Opponent disconnected!");
+				alert.setMessage("Opponent is disconnected! "
+						+ "Final score: " + scoreP1 + " vs " + scoreP2);
+				
+				alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						TicTacToeOnline.this.finish();
+					}
+				});
+				
+				alert.create().show();				
 			}
 		} catch (JSONException e) {
 			if(result.contains("preventDisconnection")) {
@@ -155,14 +211,18 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 		
 		// Popup Box
 		if(bodyObj.has("message") && bodyObj.getString("message").length() > 0) {					
-			String message = bodyObj.getString("message");
+			final String message = bodyObj.getString("message");
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	        builder.setMessage(message)
 	        			.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
 	        				public void onClick(DialogInterface dialog, int id) {
 	        		    		// reset the game environment.
-	        					TicTacToeHelper.game.resetGame();
+	        					if(message.toLowerCase().contains("game") ||
+	        							message.toLowerCase().contains("won") ||
+	        							message.toLowerCase().contains("wins")) {
+	        						TicTacToeHelper.game.resetGame();
+	        					}
 	        				}
 	        			});
 	        AlertDialog alert = builder.create();
@@ -230,8 +290,17 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
     public void updateScore(int score1, int score2){
     	TextView tv = (TextView) findViewById(R.id.scoreboard);
 
-    	CharSequence score_txt = 
-    		"Computer : " + score1 + "                   Player : " + score2;
+    	CharSequence score_txt;
+    	
+    	if(mode == TicTacToeHelper.PVP_1stplayer) {
+    		score_txt = "Player : " + score1 + "                   Opponent : " + score2;
+    	}
+    	else if(mode == TicTacToeHelper.PVP_2ndplayer) {
+    		score_txt = "Opponent : " + score1 + "                   Player :" + score2;    		
+    	}
+    	else {
+    		score_txt = "Player : " + score1 + "                   Computer : " + score2;
+    	}
     	
     	tv.setText(score_txt);
     }

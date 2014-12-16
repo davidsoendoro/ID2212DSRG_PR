@@ -4,12 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 
 import com.android.project.TicTacToeGenericActivity;
 import com.android.project.helper.TicTacToeHelper;
@@ -19,9 +16,10 @@ import android.net.http.AndroidHttpClient;
 
 public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
-	private static final String URI_GETLIST = "http://192.168.0.101:8080/TicTacToe_LobbyServer/LobbyServlet";
-	private static final String URI_CREATEGAME = "http://192.168.0.101:8080/TicTacToe_LobbyServer/CreateGame?name=";
-	private static final String URI_JOINGAME = "http://192.168.0.101:8080/TicTacToe_LobbyServer/JoinGame?name=";
+	private static final String URI_SERVERADDR = "http://192.168.1.18:8080";
+	private static final String URI_GETLIST = URI_SERVERADDR + "/TicTacToe_LobbyServer/LobbyServlet";
+	private static final String URI_CREATEGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/CreateGame?name=";
+	private static final String URI_JOINGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/JoinGame?name=";
 
 	private boolean isCalling = false;
 	

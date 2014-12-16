@@ -16,30 +16,32 @@ import android.widget.EditText;
 
 
 public class TicTacToeCreateJoinActivity extends TicTacToeGenericActivity implements OnClickListener,Runnable {
+	
 	int flag;
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.lobby_pvp);
-		Button b1=(Button) findViewById(R.id.button1);
-		b1.setOnClickListener(this);
-		Button b2=(Button) findViewById(R.id.button2);
-		b2.setOnClickListener(this);
+		Button buttonCreate=(Button) findViewById(R.id.button_create);
+		buttonCreate.setOnClickListener(this);
+		Button buttonJoin=(Button) findViewById(R.id.button_join);
+		buttonJoin.setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
-		if(v.getId()==R.id.button1){
+		if(v.getId()==R.id.button_create){
 			EditText text=(EditText) findViewById(R.id.editText1);
 			if(text.getText().toString()!=""){
-				flag=1;
+				flag = TicTacToeHelper.COMMAND_CREATEGAME;
 				TicTacToeHelper.lobby = new TicTacToeLobbyAPIImpl(TicTacToeCreateJoinActivity.this);
 				TicTacToeHelper.lobby.setActivity(this);
 				TicTacToeHelper.lobby.setCallback(this);
 				TicTacToeHelper.lobby.createGame(text.getText().toString());
 			}
 		}
-		else if(v.getId()==R.id.button2){
+		else if(v.getId()==R.id.button_join){
 			Intent intent= new Intent(this, TicTacToeLobbyPvP.class);
 			startActivity(intent);
 		}
@@ -51,27 +53,30 @@ public class TicTacToeCreateJoinActivity extends TicTacToeGenericActivity implem
 			getDialog().dismiss();
 		}
 
-
 		try {
-			if(flag==1){
-			JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
-			if(obj.has("GameId")){
-				flag=0;
-				System.out.println("Received game Id: "+obj.getInt("GameId"));
-				TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeCreateJoinActivity.this, 
-						"192.168.0.101", 8090);
-				TicTacToeHelper.game.setCallback(TicTacToeCreateJoinActivity.this);
-				TicTacToeHelper.game.createGame(obj.getInt("GameId"));
-				
+			if(flag == TicTacToeHelper.COMMAND_CREATEGAME){
+				JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
+				if(obj.has("GameId")){
+					flag = TicTacToeHelper.COMMAND_STARTGAME;
+					System.out.println("Received game Id: "+obj.getInt("GameId"));
+					TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeCreateJoinActivity.this, 
+							"192.168.1.18", 8090);
+					TicTacToeHelper.game.setCallback(TicTacToeCreateJoinActivity.this);
+					TicTacToeHelper.game.createGame(obj.getInt("GameId"));
+				}
 			}
-			}
-			else if(flag==0){
+			else if(flag == TicTacToeHelper.COMMAND_STARTGAME){
 				JSONObject obj= new JSONObject(TicTacToeHelper.game.getResult());
 				if(obj.getString("Request").equals("createGame")) {
-					// Callback for NewSingleGame
-					Intent i = new Intent(this, TicTacToeOnline.class);
-					startActivity(i);
+					flag = TicTacToeHelper.COMMAND_WAITFORNEWGAME;
+					TicTacToeHelper.game.waitForNewGame();
 				}
+			}
+			else if(flag == TicTacToeHelper.COMMAND_WAITFORNEWGAME) {
+				// Callback for waitForNewGame
+				Intent i = new Intent(this, TicTacToeOnline.class);
+				i.putExtra("mode", TicTacToeHelper.PVP_1stplayer);
+				startActivity(i);
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

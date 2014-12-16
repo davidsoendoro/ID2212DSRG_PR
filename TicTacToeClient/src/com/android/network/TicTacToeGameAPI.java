@@ -32,6 +32,8 @@ public interface TicTacToeGameAPI {
 	 */
 	public void waitForNewGame();
 	
+	public void waitForOpponentMove();
+	
 	/**
 	 * Prevent opponent disconnection
 	 */

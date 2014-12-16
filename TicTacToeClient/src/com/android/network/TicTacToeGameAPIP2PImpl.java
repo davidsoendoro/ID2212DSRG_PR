@@ -765,4 +765,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		System.out.println(string);
 	}
 
+	@Override
+	public void waitForOpponentMove() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

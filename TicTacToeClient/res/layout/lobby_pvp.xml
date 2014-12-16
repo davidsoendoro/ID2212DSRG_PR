@@ -3,10 +3,10 @@
     android:layout_height="fill_parent" >
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button_join"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
+        android:layout_alignLeft="@+id/button_create"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="106dp"
         android:text="Join Game" />
@@ -15,7 +15,7 @@
         android:id="@+id/editText1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
+        android:layout_alignLeft="@+id/button_create"
         android:layout_alignParentTop="true"
         android:layout_marginTop="38dp"
         android:ems="10" >
@@ -24,7 +24,7 @@
     </EditText>
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/button_create"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"

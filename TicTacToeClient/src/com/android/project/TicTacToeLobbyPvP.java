@@ -50,31 +50,32 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 
 
 		try {
-			if(flag==1){
-			JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
-			if(obj.has("Games")){
-			flag=0;
-			JSONArray arr= new JSONArray(obj.getString("Games"));
-			for(int i=0;i<arr.length();i++){
-				JSONObject item= (JSONObject) arr.get(i);
-				gameNames.add(item.getString("name"));
+			if(flag==1) {
+				JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
+				if(obj.has("Games")){
+					flag=0;
+					JSONArray arr= new JSONArray(obj.getString("Games"));
+					for(int i=0;i<arr.length();i++){
+						JSONObject item= (JSONObject) arr.get(i);
+						gameNames.add(item.getString("name"));
+					}
+				}
+				else if(obj.has("GameId")){
+					flag=0;
+					System.out.println("Received game Id: "+obj.getInt("GameId"));
+					TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyPvP.this, 
+						"192.168.1.18", 8090);
+					TicTacToeHelper.game.setCallback(TicTacToeLobbyPvP.this);
+					TicTacToeHelper.game.joinGame(obj.getInt("GameId"));
+				}
 			}
-			}
-			else if(obj.has("GameId")){
-				flag=0;
-				System.out.println("Received game Id: "+obj.getInt("GameId"));
-				TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyPvP.this, 
-						"192.168.0.101", 8090);
-				TicTacToeHelper.game.setCallback(TicTacToeLobbyPvP.this);
-				TicTacToeHelper.game.joinGame(obj.getInt("GameId"));
-			}
-		}
 			else if(flag==0){
 				JSONObject obj= new JSONObject(TicTacToeHelper.game.getResult());
 				if(obj.getString("Request").equals("joinGame")) {
 					// Callback for NewSingleGame
 					System.out.println("I am here");
 					Intent i = new Intent(this, TicTacToeOnline.class);
+					i.putExtra("mode", TicTacToeHelper.PVP_2ndplayer);
 					startActivity(i);
 				}
 			}
@@ -85,10 +86,12 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 		list=(ListView) findViewById(R.id.list);
 		ArrayAdapter< String> adapter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,android.R.id.text1,gameNames);
 		list.setAdapter(adapter);
+		
 		list.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+				
 				flag=1;
 				TicTacToeHelper.lobby.joinGame(gameNames.get(position));
 
