@@ -32,18 +32,22 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 	
 	private boolean isCalling = false;
 	
-	public TicTacToeGameAPIImpl(TicTacToeGenericActivity activity, String ip, int port) {
+	public TicTacToeGameAPIImpl(TicTacToeGenericActivity activity, final String ip, final int port) {
 		this.activity = activity;
 		this.ip = ip;
 		this.port = port;
 		
-		try {
-			socket = new Socket(ip, port);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Thread t=new Thread(){
+			public void run(){
+				try {
+					socket = new Socket(ip, port);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t.start();
+		
 	}
 	
 	public TicTacToeGenericActivity getActivity() {

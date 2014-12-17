@@ -324,10 +324,10 @@ public class TictactoeHandler extends GenericHandler {
         if(this.tictactoeGame == null) {
             this.player = 1;
             this.tictactoeGame = new TicTacToeGame(id, socket);
+            this.tictactoeGame.IMEI_1=body.get("username").getAsString();
+            
         }
-        
         TicTacToeGameServer.map.put(id, this.tictactoeGame);
-        writeOutput("added in hash");
     }
 
     private void joinGameString(JsonObject body) {
@@ -380,12 +380,12 @@ public class TictactoeHandler extends GenericHandler {
     
     private boolean joinGame(JsonObject body) {
         int id = body.get("GameId").getAsInt();
-        writeOutput("Received join");
         
         if(TicTacToeGameServer.map.containsKey(id)) {
             this.player = 2;
             this.tictactoeGame = TicTacToeGameServer.map.get(id);
             this.tictactoeGame.setPlayer2Socket(socket);
+            this.tictactoeGame.IMEI_2=body.get("username").getAsString();
             return true;
         }
         else {

@@ -27,11 +27,12 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author davidsoendoro
  */
-@WebServlet(name = "LobbyServlet", urlPatterns = {"/LobbyServlet", "/CreateGame", "/JoinGame","/GetAllUsers","/InsertUser","/UpdateScore"})
+@WebServlet(name = "LobbyServlet", urlPatterns = {"/LobbyServlet", "/CreateGame", "/JoinGame","/GetAllUsers","/UpdateScore","/GetScore"})
 public class LobbyServlet extends HttpServlet {
     
     @EJB
     private GameFacade gameFacade;
+    @EJB
     private UsersFacade userFacade;
 
     @Override
@@ -60,14 +61,15 @@ public class LobbyServlet extends HttpServlet {
         else if(request.getServletPath().equals("/JoinGame")) {
             doJoinGame(request, response);
         }
-        else if(request.getServletPath().equals("/InsertUser")) {
-            doInsertUser(request, response);
-        }
         else if(request.getServletPath().equals("/UpdateScore")) {
             doUpdateScore(request, response);
         }
         else if(request.getServletPath().equals("/GetAllUsers")) {
             getAllusers(request, response);
+        }
+        
+        else if(request.getServletPath().equals("/GetScore")) {
+            doGetScore(request, response);
         }
     }
 
@@ -109,7 +111,13 @@ public class LobbyServlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
+/**
+     Handles HTTP GET /LobbyServlet
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */
     private void doLobbyServlet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try (PrintWriter out = response.getWriter()) {
             JsonObject jsonObject = new JsonObject();
@@ -125,10 +133,17 @@ public class LobbyServlet extends HttpServlet {
         }
     }
 
+/**
+     Handles HTTP GET /CreateGame?name=""
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */    
     private void doCreateGame(HttpServletRequest request, HttpServletResponse response) throws IOException {
         
         int gameId = gameFacade.insertGame(request.getParameter("name"));
-        
+        userFacade.insertUser(request.getParameter("username"));
         try (PrintWriter out = response.getWriter()) {
             JsonObject jsonObject = new JsonObject();
             
@@ -137,9 +152,17 @@ public class LobbyServlet extends HttpServlet {
             out.println(jsonObject.toString());
         }
     }
-
+/**
+     Handles HTTP GET /JoinGame?name=""
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */  
+    
     private void doJoinGame(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int gameId = gameFacade.joinGame(request.getParameter("name"));
+        userFacade.insertUser(request.getParameter("username"));
         if(gameId > 0){
             try (PrintWriter out = response.getWriter()) {
                 JsonObject jsonObject = new JsonObject();
@@ -156,26 +179,18 @@ public class LobbyServlet extends HttpServlet {
     
     }
     
-    private void doInsertUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int userId = userFacade.insertUser(request.getParameter("name"));
-        if(userId > 0){
-            try (PrintWriter out = response.getWriter()) {
-                JsonObject jsonObject = new JsonObject();
-
-                jsonObject.addProperty("UserId", userId);
-
-                out.println(jsonObject.toString());
-            }
-        }
-        else{
-            
-        }
     
-    
-    }
-    
+    /**
+     Handles HTTP GET /UpdateScore?username=""&win=""&draw=""&lose=""
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */
     private void doUpdateScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int userId = userFacade.updateScore(request.getParameter("name"),Integer.parseInt(request.getParameter("win")),Integer.parseInt(request.getParameter("lose")),Integer.parseInt(request.getParameter("draw")));
+        if(request.getParameter("username").equals(""))
+            return;
+        int userId = userFacade.updateScore(request.getParameter("username"),Integer.parseInt(request.getParameter("update")));
         if(userId > 0){
             try (PrintWriter out = response.getWriter()) {
                 JsonObject jsonObject = new JsonObject();
@@ -192,6 +207,36 @@ public class LobbyServlet extends HttpServlet {
     
     }
     
+    /**
+     Handles HTTP GET /GetScore?username=""
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */
+    private void doGetScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+       try (PrintWriter out = response.getWriter()) {
+            JsonObject jsonObject = new JsonObject();
+            
+            Users user = userFacade.getScore(request.getParameter("username"));
+            Gson gson = new Gson();
+            JsonElement element = gson.toJsonTree(user, 
+                    new TypeToken<Users>(){}.getType());
+            
+            jsonObject.addProperty("User", element.getAsJsonObject().toString());
+            
+            out.println(jsonObject.toString());
+        }
+    
+    }
+    
+    /**
+     Handles HTTP GET /GetAllUsers
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws IOException if an I/O error occurs
+     */
     private void getAllusers(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try (PrintWriter out = response.getWriter()) {
             JsonObject jsonObject = new JsonObject();

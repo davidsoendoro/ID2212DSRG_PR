@@ -26,12 +26,15 @@ public class TicTacToe extends Activity {
         final ImageView iv_new_game = (ImageView) findViewById(R.id.new_game_pvc_offline);
         final ImageView iv_new_game_pvp_online = (ImageView) findViewById(R.id.new_game_pvp_online);
         final ImageView iv_new_game_pvp_p2p = (ImageView) findViewById(R.id.new_game_pvp_p2p);
+        final ImageView iv_dashboard = (ImageView) findViewById(R.id.my_dashboard);
+
         final ImageView iv_quit = (ImageView) findViewById(R.id.quit);
 
         iv_new_game_online.setOnClickListener(welcome_listener);
         iv_new_game.setOnClickListener(welcome_listener);
         iv_new_game_pvp_online.setOnClickListener(welcome_listener);
         iv_new_game_pvp_p2p.setOnClickListener(welcome_listener);
+        iv_dashboard.setOnClickListener(welcome_listener);        
         iv_quit.setOnClickListener(welcome_listener);
     }
     
@@ -57,7 +60,10 @@ public class TicTacToe extends Activity {
     			Intent i = new Intent(TicTacToe.this, TicTacToeLobbyP2P.class);
     			startActivity(i);
     		}
-    		
+    		else if (iv.getId() == R.id.my_dashboard) {
+    			Intent i = new Intent(TicTacToe.this, DashboardActivity.class);
+    			startActivity(i);
+    		}
     		
     		else if (iv.getId() == R.id.quit) {
     			finish();

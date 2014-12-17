@@ -60,23 +60,28 @@
 	    android:layout_alignRight="@+id/new_game_pvc_offline"
 	    android:layout_below="@+id/new_game_pvc_offline"
 	    android:background="@drawable/pvp_offline" />
-
+<ImageView
+	    android:id="@+id/my_dashboard"
+	    android:layout_width="wrap_content"
+	    android:layout_height="60dip"
+	    android:layout_alignLeft="@+id/new_game_pvc_offline"
+	    android:layout_alignRight="@+id/new_game_pvc_offline"
+	    android:layout_below="@+id/new_game_pvp_p2p"
+	    android:background="@drawable/dashboard" />
 	<ImageView
 	    android:id="@+id/new_game_pvp_online"
 	    android:layout_width="wrap_content"
 	    android:layout_height="60dip"
 	    android:layout_below="@+id/title"
 	    android:layout_centerHorizontal="true"
-	    android:layout_marginTop="21dp"
 	    android:background="@drawable/pvp_online" />
 
 	<ImageView
 	    android:id="@+id/quit"
 	    android:layout_width="wrap_content"
 	    android:layout_height="60dip"
-	    android:layout_below="@+id/new_game_pvp_p2p"
+	    android:layout_alignParentBottom="true"
 	    android:layout_centerHorizontal="true"
-	    android:layout_marginTop="30dp"
 	    android:background="@drawable/quit" />
     
 </RelativeLayout>

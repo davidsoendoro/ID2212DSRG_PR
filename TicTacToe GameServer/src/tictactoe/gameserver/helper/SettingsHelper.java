@@ -12,5 +12,6 @@ package tictactoe.gameserver.helper;
 public class SettingsHelper {
     
     public static boolean isReadString = true;
+    public static String lobbyURL="http://localhost:8080/TicTacToe_LobbyServer/UpdateScore?";
     
 }

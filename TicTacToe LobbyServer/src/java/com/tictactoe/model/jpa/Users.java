@@ -59,9 +59,13 @@ public class Users implements Serializable {
         this.id = id;
     }
 
-    public Users(Integer id, String username) {
+    public Users(Integer id, String username,int win, int lose, int draw) {
         this.id = id;
         this.username = username;
+        this.win=win;
+        this.lose=lose;
+        this.draw=draw;
+        
     }
 
     public Integer getId() {
