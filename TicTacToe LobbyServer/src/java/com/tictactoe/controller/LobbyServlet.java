@@ -10,7 +10,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.tictactoe.model.GameFacade;
+import com.tictactoe.model.UsersFacade;
 import com.tictactoe.model.jpa.Game;
+import com.tictactoe.model.jpa.Users;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -25,11 +27,12 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author davidsoendoro
  */
-@WebServlet(name = "LobbyServlet", urlPatterns = {"/LobbyServlet", "/CreateGame", "/JoinGame"})
+@WebServlet(name = "LobbyServlet", urlPatterns = {"/LobbyServlet", "/CreateGame", "/JoinGame","/GetAllUsers","/InsertUser","/UpdateScore"})
 public class LobbyServlet extends HttpServlet {
     
     @EJB
     private GameFacade gameFacade;
+    private UsersFacade userFacade;
 
     @Override
     public void init() throws ServletException {
@@ -56,7 +59,16 @@ public class LobbyServlet extends HttpServlet {
         }
         else if(request.getServletPath().equals("/JoinGame")) {
             doJoinGame(request, response);
-        }        
+        }
+        else if(request.getServletPath().equals("/InsertUser")) {
+            doInsertUser(request, response);
+        }
+        else if(request.getServletPath().equals("/UpdateScore")) {
+            doUpdateScore(request, response);
+        }
+        else if(request.getServletPath().equals("/GetAllUsers")) {
+            getAllusers(request, response);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -143,5 +155,59 @@ public class LobbyServlet extends HttpServlet {
     
     
     }
+    
+    private void doInsertUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int userId = userFacade.insertUser(request.getParameter("name"));
+        if(userId > 0){
+            try (PrintWriter out = response.getWriter()) {
+                JsonObject jsonObject = new JsonObject();
 
+                jsonObject.addProperty("UserId", userId);
+
+                out.println(jsonObject.toString());
+            }
+        }
+        else{
+            
+        }
+    
+    
+    }
+    
+    private void doUpdateScore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int userId = userFacade.updateScore(request.getParameter("name"),Integer.parseInt(request.getParameter("win")),Integer.parseInt(request.getParameter("lose")),Integer.parseInt(request.getParameter("draw")));
+        if(userId > 0){
+            try (PrintWriter out = response.getWriter()) {
+                JsonObject jsonObject = new JsonObject();
+
+                jsonObject.addProperty("UserId", userId);
+
+                out.println(jsonObject.toString());
+            }
+        }
+        else{
+            
+        }
+    
+    
+    }
+    
+    private void getAllusers(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try (PrintWriter out = response.getWriter()) {
+            JsonObject jsonObject = new JsonObject();
+            
+            List<Users> users = userFacade.findAll();
+            if(users!=null){
+            Gson gson = new Gson();
+            JsonElement element = gson.toJsonTree(users, 
+                    new TypeToken<List<Users>>(){}.getType());
+            
+            jsonObject.addProperty("Users", element.getAsJsonArray().toString());
+            
+            out.println(jsonObject.toString());
+        }
+        else
+        out.println("No users available");
+    }
+    }
 }
