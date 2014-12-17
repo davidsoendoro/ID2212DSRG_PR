@@ -60,7 +60,7 @@ public class TicTacToeCreateJoinActivity extends TicTacToeGenericActivity implem
 					flag = TicTacToeHelper.COMMAND_STARTGAME;
 					System.out.println("Received game Id: "+obj.getInt("GameId"));
 					TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeCreateJoinActivity.this, 
-							"192.168.1.18", 8090);
+							"192.168.0.100", 8090);
 					TicTacToeHelper.game.setCallback(TicTacToeCreateJoinActivity.this);
 					TicTacToeHelper.game.createGame(obj.getInt("GameId"));
 				}

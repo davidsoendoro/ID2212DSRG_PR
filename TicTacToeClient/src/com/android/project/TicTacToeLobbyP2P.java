@@ -9,9 +9,11 @@ import com.android.project.helper.TicTacToeHelper;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.net.nsd.NsdManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.format.Formatter;
@@ -28,13 +30,15 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 	private Button buttonLobbyConnect;
 	private TextView textViewUserIp;
 	private boolean isServer = false;
+	DiscoverService service;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		// GUI
-		setContentView(R.layout.lobby_p2p);
+		
+		/*setContentView(R.layout.lobby_p2p);
 		
 		textViewUserIp = (TextView) findViewById(R.id.textView_lobby_ip);
 		WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -46,13 +50,19 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		Button buttonLobbyJoin = (Button) findViewById(R.id.button_lobby_join);
 		buttonLobbyJoin.setOnClickListener(TicTacToeLobbyP2P.this);
 //		checkBoxVsPlayer = (CheckBox) findViewById(R.id.checkBox_vsplayer);
+ */
+		setContentView(R.layout.lobby_pvp);
+		Button buttonCreate=(Button) findViewById(R.id.button_create);
+		buttonCreate.setOnClickListener(this);
+		Button buttonJoin=(Button) findViewById(R.id.button_join);
+		buttonJoin.setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
 		String ip = "130.229.154.233";
 		int port = 8090;
-		
+		/*
 		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);
 		EditText editTextPort = (EditText) findViewById(R.id.editText_lobby_port);
 		
@@ -62,15 +72,23 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		if(editTextPort.getText().length() > 0) {
 			port = Integer.valueOf(editTextPort.getText().toString());
 		}
-		
+		*/
 		// Threading
-		if(v.getId() == R.id.button_lobby_create) {
+		if(v.getId() == R.id.button_create) {
 			TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
 			TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
 			isServer = true;
+			RegisterService service=new RegisterService((NsdManager) getSystemService(Context.NSD_SERVICE));
+			service.registerService(8090);
 			TicTacToeHelper.gameP2p.createGame(0);
 		}
-		else if(v.getId() == R.id.button_lobby_join) {
+		else if(v.getId() == R.id.button_join) {
+			service=new DiscoverService((NsdManager) getSystemService(Context.NSD_SERVICE));
+			
+			service.setCallback(this);
+			service.setActivity(this);
+			service.discover();
+			/*
 			TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
 					ip, port);
 			if(TicTacToeHelper.game.getSocket() != null) {
@@ -79,10 +97,28 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			}
 			else {
 				Toast.makeText(this, "Unable to connect!", Toast.LENGTH_SHORT).show();
-			}
+			}*/
 		}
 	}
 
+	public void createGame(){
+		this.runOnUiThread(new Runnable() {
+			  public void run() {
+		TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
+				service.hostAddress, service.hostPort);
+		if(TicTacToeHelper.game.getSocket() != null) {
+			TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
+			TicTacToeHelper.game.createGame(0);
+		}
+		else {
+			
+				    Toast.makeText(TicTacToeLobbyP2P.this, "Unable to connect!", Toast.LENGTH_SHORT).show();
+				  }
+		}
+			
+		});
+	}
+	
 	@Override
 	public void onCancel(DialogInterface dialog) {
 		if(dialog.equals(getDialog())) {
@@ -106,7 +142,12 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			result = TicTacToeHelper.gameP2p.getResult();			
 		}
 		else {
-			result = TicTacToeHelper.game.getResult();			
+			if(TicTacToeHelper.game==null){
+				createGame();
+			return;
+			}
+			else
+				result = TicTacToeHelper.game.getResult();			
 		}
 		try {
 			JSONObject resultObj = new JSONObject(result);
