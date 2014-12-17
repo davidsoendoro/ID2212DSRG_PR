@@ -36,7 +36,7 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 
 	@Override
 	public void onClick(View v) {
-		String ip = "192.168.1.18";
+		String ip = TicTacToeHelper.serverAddress;
 		int port = 8090;
 		
 		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);
@@ -53,17 +53,12 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobby.this, 
 				ip, port);
 
-		if(TicTacToeHelper.game.getSocket() != null) {
-			if(v.getId() == R.id.button_lobby_create) {
-				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-				TicTacToeHelper.game.createSingleGame();					
-			}
-			else if(v.getId() == R.id.button_lobby_join) {
-				TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
-			}
+		if(v.getId() == R.id.button_lobby_create) {
+			TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
+			TicTacToeHelper.game.createSingleGame();					
 		}
-		else {
-			Toast.makeText(this, "Unable to connect!", Toast.LENGTH_SHORT).show();
+		else if(v.getId() == R.id.button_lobby_join) {
+			TicTacToeHelper.game.setCallback(TicTacToeLobby.this);
 		}
 	}
 
