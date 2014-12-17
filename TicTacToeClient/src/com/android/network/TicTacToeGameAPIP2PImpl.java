@@ -31,7 +31,7 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	
 	private TicTacToeGenericActivity activity;
 	private Runnable callback;
-	private String result;
+	private String result = "";
 	
 	private boolean isCalling = false;
 
@@ -93,8 +93,8 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 
 	@Override
 	public void createGame(int id) {
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Wait for Opponent", "Now waiting..."));
+//		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+//				"Wait for Opponent", "Now waiting..."));
 		
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);

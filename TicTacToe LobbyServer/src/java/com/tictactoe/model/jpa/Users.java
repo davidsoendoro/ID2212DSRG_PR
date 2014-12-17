@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author rohitgoyal
+ * @author davidsoendoro
  */
 @Entity
 @Table(name = "USERS")
@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Users.findById", query = "SELECT u FROM Users u WHERE u.id = :id"),
     @NamedQuery(name = "Users.findByUsername", query = "SELECT u FROM Users u WHERE u.username = :username"),
     @NamedQuery(name = "Users.findByWin", query = "SELECT u FROM Users u WHERE u.win = :win"),
-    @NamedQuery(name = "Users.findByLose", query = "SELECT u FROM Users u WHERE u.lose = :lose"),
-    @NamedQuery(name = "Users.findByDraw", query = "SELECT u FROM Users u WHERE u.draw = :draw")})
+    @NamedQuery(name = "Users.findByDraw", query = "SELECT u FROM Users u WHERE u.draw = :draw"),
+    @NamedQuery(name = "Users.findByLose", query = "SELECT u FROM Users u WHERE u.lose = :lose")})
 public class Users implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -42,15 +42,15 @@ public class Users implements Serializable {
     private Integer id;
     @Basic(optional = false)
     @NotNull
-    @Size(min = 1, max = 255)
+    @Size(min = 1, max = 64)
     @Column(name = "USERNAME")
     private String username;
     @Column(name = "WIN")
     private Integer win;
-    @Column(name = "LOSE")
-    private Integer lose;
     @Column(name = "DRAW")
     private Integer draw;
+    @Column(name = "LOSE")
+    private Integer lose;
 
     public Users() {
     }
@@ -92,20 +92,20 @@ public class Users implements Serializable {
         this.win = win;
     }
 
-    public Integer getLose() {
-        return lose;
-    }
-
-    public void setLose(Integer lose) {
-        this.lose = lose;
-    }
-
     public Integer getDraw() {
         return draw;
     }
 
     public void setDraw(Integer draw) {
         this.draw = draw;
+    }
+
+    public Integer getLose() {
+        return lose;
+    }
+
+    public void setLose(Integer lose) {
+        this.lose = lose;
     }
 
     @Override

@@ -1,15 +1,13 @@
 package com.android.project.helper;
 
-import android.R.string;
-
 import com.android.network.TicTacToeGameAPIImpl;
 import com.android.network.TicTacToeGameAPIP2PImpl;
 import com.android.network.TicTacToeLobbyAPIImpl;
 
 public class TicTacToeHelper {
 
-	public static final String serverAddress = "192.168.0.101";
-	public static final String serverAddressLobby = "192.168.0.101";
+	public static final String serverAddress = "192.168.1.18";
+	public static final String serverAddressLobby = "192.168.1.18";
 	
 	public static TicTacToeGameAPIImpl game;
 	public static TicTacToeLobbyAPIImpl lobby;

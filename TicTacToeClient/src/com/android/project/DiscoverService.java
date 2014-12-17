@@ -1,46 +1,54 @@
 package com.android.project;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 import android.util.Log;
 
 public class DiscoverService {
     private String SERVICE_NAME = "Client Device";
     private String SERVICE_TYPE = "_ttt._tcp.";
     
-    public String hostAddress;
-    public int hostPort;
+    private String hostAddress;
+    private int hostPort;
     private NsdManager mNsdManager;
     private Runnable callback;
     private TicTacToeGenericActivity activity;
     private boolean isCalling = false;
     
-    public DiscoverService(NsdManager manager) {
-        
-        
+    private List<NsdServiceInfo> services;
+    private String result;
+    
+    private boolean isDiscovering;
+    
+    public DiscoverService(Context context) {
         // NSD Stuff
-       mNsdManager=manager;
-    	// mNsdManager = (NsdManager) getSystemService(Context.NSD_SERVICE);
-        
+    	mNsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     }
     
     public void discover(){
     	while(isCalling);
 		isCalling = true;
 		
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Search Game", "Now Searching..."));
+//		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+//				"Search Game", "Now Searching..."));
     	mNsdManager.discoverServices(SERVICE_TYPE,
                 NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     	
     }
     
     protected void onDestroy() {
-        if (mNsdManager != null) {
+        if (mNsdManager != null && isDiscovering) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+            isDiscovering = false;
         }
     }
     
@@ -52,6 +60,26 @@ public class DiscoverService {
 		this.callback = callback;
 	}
 	
+	public String getResult() {
+		return result;
+	}
+
+	public void setResult(String result) {
+		this.result = result;
+	}
+
+	public List<NsdServiceInfo> getServices() {
+		return services;
+	}
+
+	public String getHostAddress() {
+		return hostAddress;
+	}
+
+	public int getHostPort() {
+		return hostPort;
+	}
+
 	public TicTacToeGenericActivity getActivity() {
 		return activity;
 	}
@@ -60,21 +88,34 @@ public class DiscoverService {
 		this.activity = activity;
 	}
 	
-    NsdManager.DiscoveryListener mDiscoveryListener = new NsdManager.DiscoveryListener() {
+	public void stopDiscoveryService() {
+        if (mNsdManager != null && isDiscovering) {
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+            isDiscovering = false;
+        }
+	}
+	
+    public NsdManager getmNsdManager() {
+		return mNsdManager;
+	}
+
+	NsdManager.DiscoveryListener mDiscoveryListener = new NsdManager.DiscoveryListener() {
     
         // Called as soon as service discovery begins.
         @Override
         public void onDiscoveryStarted(String regType) {
             Log.d("NSD", "Service discovery started");
+            isDiscovering = true;
+            services = new ArrayList<NsdServiceInfo>();
         }
         
         @Override
         public void onServiceFound(NsdServiceInfo service) {
-                // A service was found! Do something with it.
-                Log.d("NSD", "Service discovery success : " + service);
-                Log.d("NSD", "Host = "+ service.getServiceName());
-                Log.d("NSD", "port = " + String.valueOf(service.getPort()));
-                isCalling=false;
+            // A service was found! Do something with it.
+            Log.d("NSD", "Service discovery success : " + service);
+            Log.d("NSD", "Host = "+ service.getServiceName());
+            Log.d("NSD", "port = " + String.valueOf(service.getPort()));
+            isCalling = false;
                 
             if (!service.getServiceType().equals(SERVICE_TYPE)) {
                 // Service type is the string containing the protocol and
@@ -87,8 +128,46 @@ public class DiscoverService {
             } else {
                 Log.d("NSD", "Diff Machine : " + service.getServiceName());
                 // connect to the service and obtain serviceInfo
-                mNsdManager.resolveService(service, mResolveListener);
+//                mNsdManager.resolveService(service, new NsdManager.ResolveListener() {
+//                    
+//                    @Override
+//                    public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+//                        // Called when the resolve fails. Use the error code to debug.
+//                        Log.e("NSD", "Resolve failed " + errorCode);
+//                        Log.e("NSD", "serivce = " + serviceInfo);
+//                        isCalling=false;
+//                    }
+//                
+//                    @Override
+//                    public void onServiceResolved(NsdServiceInfo serviceInfo) {
+//                        Log.d("NSD", "Resolve Succeeded. " + serviceInfo);
+//
+//                		WifiManager wm = (WifiManager) activity.getSystemService(Context.WIFI_SERVICE);
+//                		String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+//            			
+//                        if (serviceInfo.getServiceName().equals(SERVICE_NAME) || 
+//                        		serviceInfo.getHost().getHostAddress().equals("10.0.2.15") ||
+//                        		serviceInfo.getHost().getHostAddress().equals(ip)) {
+//                            Log.d("NSD", "Same IP.");
+//                            return;
+//                        }
+//                    
+//                        // Obtain port and IP
+//                        hostPort = serviceInfo.getPort();
+//                        hostAddress = serviceInfo.getHost().getHostAddress();
+//                        isCalling = false;
+//                        getActivity().runOnUiThread(callback);
+//                        
+//                    }
+//                });
             }
+
+            isDiscovering = false;
+            mNsdManager.stopServiceDiscovery(this);
+            result = "DiscoveryService";
+            
+            services.add(service);
+            getActivity().runOnUiThread(callback);
         }
         
         @Override
@@ -119,33 +198,4 @@ public class DiscoverService {
             isCalling=false;
         }
     };
-    
-    NsdManager.ResolveListener mResolveListener = new NsdManager.ResolveListener() {
-    
-        @Override
-        public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            // Called when the resolve fails. Use the error code to debug.
-            Log.e("NSD", "Resolve failed " + errorCode);
-            Log.e("NSD", "serivce = " + serviceInfo);
-            isCalling=false;
-        }
-    
-        @Override
-        public void onServiceResolved(NsdServiceInfo serviceInfo) {
-            Log.d("NSD", "Resolve Succeeded. " + serviceInfo);
-            
-            if (serviceInfo.getServiceName().equals(SERVICE_NAME)) {
-                Log.d("NSD", "Same IP.");
-                return;
-            }
-        
-            // Obtain port and IP
-            hostPort = serviceInfo.getPort();
-            hostAddress = serviceInfo.getHost().getHostAddress();
-            isCalling=false;
-            getActivity().runOnUiThread(callback);
-            
-        }
-    };
-    
 }

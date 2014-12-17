@@ -2,7 +2,10 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group name="ID2212DSRG_PR"/>
         <group name="ID2212DSRG_HW3"/>
+        <group name="ID2212DSRG_PR">
+            <file>file:/Users/davidsoendoro/ID2212DSRG_PR/TicTacToe%20LobbyServer/src/java/com/tictactoe/controller/LobbyServlet.java</file>
+            <file>file:/Users/davidsoendoro/ID2212DSRG_PR/TicTacToe%20LobbyServer/src/java/com/tictactoe/model/UsersFacade.java</file>
+        </group>
     </open-files>
 </project-private>

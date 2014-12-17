@@ -12,7 +12,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.android.project.TicTacToeGenericActivity;
-import com.android.project.TicTacToeOnline;
 import com.android.project.helper.TicTacToeHelper;
 import com.android.project.model.T3Protocol;
 
@@ -36,18 +35,6 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		this.activity = activity;
 		this.ip = ip;
 		this.port = port;
-		
-		Thread t=new Thread(){
-			public void run(){
-				try {
-					socket = new Socket(ip, port);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		t.start();
-		
 	}
 	
 	public TicTacToeGenericActivity getActivity() {
@@ -92,8 +79,8 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		while(isCalling);
 		isCalling = true;
 		
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Creating Game", "Now Creating..."));
+//		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+//				"Creating Game", "Now Creating..."));
 		
 		ConnectionThread connectionThread = new ConnectionThread(""+id);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
@@ -244,6 +231,15 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 
 		@Override
 		public void run() {
+			if(socket == null) {
+				try {
+					socket = new Socket(ip, port);
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}		
+			}
 			if (command == TicTacToeHelper.COMMAND_CREATESINGLEGAME) {
 				createSingleGameRequest();
 			}

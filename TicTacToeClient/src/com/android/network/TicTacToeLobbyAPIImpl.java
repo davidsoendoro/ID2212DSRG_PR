@@ -12,12 +12,13 @@ import com.android.project.TicTacToeGenericActivity;
 import com.android.project.helper.TicTacToeHelper;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.http.AndroidHttpClient;
 import android.telephony.TelephonyManager;
 
 public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
-	private static final String URI_SERVERADDR = "http://" + TicTacToeHelper.serverAddress + ":8080";
+	private static final String URI_SERVERADDR = "http://" + TicTacToeHelper.serverAddressLobby + ":8080";
 	private static final String URI_GETLIST = URI_SERVERADDR + "/TicTacToe_LobbyServer/LobbyServlet";
 	private static final String URI_CREATEGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/CreateGame?name=";
 	private static final String URI_JOINGAME = URI_SERVERADDR + "/TicTacToe_LobbyServer/JoinGame?name=";
@@ -66,14 +67,13 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Creating Game", "Creating..."));
-		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
+		getActivity();
+		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
 		IMEI= telephonyManager.getDeviceId();
 		
 		ConnectionThread connectionThread = new ConnectionThread(name);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
 		connectionThread.start();
-		
-		
 	}
 
 	@Override
@@ -110,7 +110,8 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Getting Score", "Populating..."));
-		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(getActivity().TELEPHONY_SERVICE);
+		getActivity();
+		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
 		IMEI= telephonyManager.getDeviceId();
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_GETSCORE);

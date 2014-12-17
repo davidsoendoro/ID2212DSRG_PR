@@ -14,5 +14,6 @@
     <string name="button_lobby_create">Create</string>
     <string name="button_lobby_join">Join</string>
     <string name="checkBox_vsplayer">VS Player?</string>
+    <string name="button_lobby_unregister">Unregister</string>
     
 </resources>

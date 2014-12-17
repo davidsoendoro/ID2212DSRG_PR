@@ -32,6 +32,7 @@ public class LobbyServlet extends HttpServlet {
     
     @EJB
     private GameFacade gameFacade;
+
     @EJB
     private UsersFacade userFacade;
 
@@ -243,16 +244,16 @@ public class LobbyServlet extends HttpServlet {
             
             List<Users> users = userFacade.findAll();
             if(users!=null){
-            Gson gson = new Gson();
-            JsonElement element = gson.toJsonTree(users, 
-                    new TypeToken<List<Users>>(){}.getType());
-            
-            jsonObject.addProperty("Users", element.getAsJsonArray().toString());
-            
-            out.println(jsonObject.toString());
+                Gson gson = new Gson();
+                JsonElement element = gson.toJsonTree(users, 
+                        new TypeToken<List<Users>>(){}.getType());
+
+                jsonObject.addProperty("Users", element.getAsJsonArray().toString());
+
+                out.println(jsonObject.toString());
+            }
+            else
+            out.println("No users available");
         }
-        else
-        out.println("No users available");
-    }
     }
 }
