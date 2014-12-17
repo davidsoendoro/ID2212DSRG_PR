@@ -30,7 +30,6 @@ public class UsersFacade extends AbstractFacade<Users> {
     }
     
     public int insertUser(String name) {
-        System.out.println("here");
         Users u = new Users(null, name);
         em.persist(u);
         em.flush();
@@ -38,9 +37,10 @@ public class UsersFacade extends AbstractFacade<Users> {
     }
     
     public int updateScore(String name,int win, int lose, int draw) {
+        
         TypedQuery<Users> query = em.createNamedQuery(
-                "Users.findByName", Users.class)
-                .setParameter("name", name);
+                "Users.findByUsername", Users.class)
+                .setParameter("username", name);
         Users u = query.getSingleResult();
         if (u != null) {
             u.setWin(win);
