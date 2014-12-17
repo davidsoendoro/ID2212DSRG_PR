@@ -102,8 +102,6 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 	}
 
 	public void createGame(){
-		this.runOnUiThread(new Runnable() {
-			  public void run() {
 		TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
 				service.hostAddress, service.hostPort);
 		if(TicTacToeHelper.game.getSocket() != null) {
@@ -111,12 +109,13 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			TicTacToeHelper.game.createGame(0);
 		}
 		else {
-			
+			this.runOnUiThread(new Runnable() {
+				  public void run() {
 				    Toast.makeText(TicTacToeLobbyP2P.this, "Unable to connect!", Toast.LENGTH_SHORT).show();
 				  }
-		}
+				});
 			
-		});
+		}
 	}
 	
 	@Override
@@ -143,7 +142,12 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		}
 		else {
 			if(TicTacToeHelper.game==null){
-				createGame();
+				Thread t= new Thread(){
+					public void run(){
+						createGame();
+					}
+			};
+			t.start();
 			return;
 			}
 			else
