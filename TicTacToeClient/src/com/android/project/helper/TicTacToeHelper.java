@@ -30,5 +30,7 @@ public class TicTacToeHelper {
 	public static final int PVC = 0;
 	public static final int PVP_1stplayer = 1;
 	public static final int PVP_2ndplayer = 2;
+	
+	public static String IMEI;
 
 }

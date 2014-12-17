@@ -79,8 +79,8 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		while(isCalling);
 		isCalling = true;
 		
-//		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-//				"Creating Game", "Now Creating..."));
+		getActivity().setDialog(ProgressDialog.show(getActivity(), 
+				"Creating Game", "Now Creating..."));
 		
 		ConnectionThread connectionThread = new ConnectionThread(""+id);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
@@ -358,6 +358,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				protocol.setRequest("createGame");
 				JSONObject body = new JSONObject();
 				body.put("GameId", this.arguments);
+				body.put("username", TicTacToeHelper.IMEI);
 				protocol.setBody(body);
 				
 				PrintWriter wr = new PrintWriter(socket.getOutputStream());
@@ -419,6 +420,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 				protocol.setRequest("joinGame");
 				JSONObject body = new JSONObject();
 				body.put("GameId", this.arguments);
+				body.put("username", TicTacToeHelper.IMEI);
 				protocol.setBody(body);
 				
 				PrintWriter wr = new PrintWriter(socket.getOutputStream());

@@ -25,7 +25,6 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 	private static final String URI_GETSCORE = URI_SERVERADDR + "/TicTacToe_LobbyServer/GetScore?username=";
 
 	private boolean isCalling = false;
-	public String IMEI="";
 	private AndroidHttpClient androidHttpClient;
 	private TicTacToeGenericActivity activity;
 	private Runnable callback;
@@ -68,8 +67,6 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Creating Game", "Creating..."));
 		getActivity();
-		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-		IMEI= telephonyManager.getDeviceId();
 		
 		ConnectionThread connectionThread = new ConnectionThread(name);
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CREATEGAME);
@@ -111,8 +108,7 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		getActivity().setDialog(ProgressDialog.show(getActivity(), 
 				"Getting Score", "Populating..."));
 		getActivity();
-		TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-		IMEI= telephonyManager.getDeviceId();
+
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_GETSCORE);
 		connectionThread.start();
@@ -179,7 +175,7 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		private void getScoreRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
-			HttpGet httpGet = new HttpGet(URI_GETSCORE+IMEI);
+			HttpGet httpGet = new HttpGet(URI_GETSCORE + TicTacToeHelper.IMEI);
 			try {
 				HttpResponse response = androidHttpClient.execute(httpGet);
 				
@@ -205,7 +201,7 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		private void createGameRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
-			HttpGet httpGet = new HttpGet(URI_CREATEGAME+this.arguments+"&username="+IMEI);
+			HttpGet httpGet = new HttpGet(URI_CREATEGAME+this.arguments+"&username=" + TicTacToeHelper.IMEI);
 			try {
 				HttpResponse response = androidHttpClient.execute(httpGet);
 				
@@ -231,7 +227,7 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		private void joinGameRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
-			HttpGet httpGet = new HttpGet(URI_JOINGAME+this.arguments+"&username="+IMEI);
+			HttpGet httpGet = new HttpGet(URI_JOINGAME+this.arguments+"&username=" + TicTacToeHelper.IMEI);
 			try {
 				HttpResponse response = androidHttpClient.execute(httpGet);
 				

@@ -58,12 +58,13 @@ public class TicTacToeCreateJoinActivity extends TicTacToeGenericActivity implem
 				JSONObject obj= new JSONObject(TicTacToeHelper.lobby.getResult());
 				if(obj.has("GameId")){
 					flag = TicTacToeHelper.COMMAND_STARTGAME;
-					System.out.println("Received game Id: "+obj.getInt("GameId"));
+					int gameId = obj.getInt("GameId");
+					System.out.println("Received game Id: " + gameId);
 					
 					TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeCreateJoinActivity.this, 
 							TicTacToeHelper.serverAddress, 8090);
 					TicTacToeHelper.game.setCallback(TicTacToeCreateJoinActivity.this);
-					TicTacToeHelper.game.createGame(obj.getInt("GameId"));
+					TicTacToeHelper.game.createGame(gameId);
 				}
 			}
 			else if(flag == TicTacToeHelper.COMMAND_STARTGAME){

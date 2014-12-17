@@ -1,10 +1,14 @@
 package com.android.project;
 
+import com.android.project.helper.TicTacToeHelper;
+
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +31,9 @@ public class TicTacToe extends Activity {
         final ImageView iv_new_game_pvp_online = (ImageView) findViewById(R.id.new_game_pvp_online);
         final ImageView iv_new_game_pvp_p2p = (ImageView) findViewById(R.id.new_game_pvp_p2p);
         final ImageView iv_dashboard = (ImageView) findViewById(R.id.my_dashboard);
+
+		TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		TicTacToeHelper.IMEI = telephonyManager.getDeviceId();
 
         final ImageView iv_quit = (ImageView) findViewById(R.id.quit);
 
