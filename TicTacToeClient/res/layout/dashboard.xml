@@ -59,7 +59,7 @@
         android:layout_alignLeft="@+id/textView2"
         android:layout_below="@+id/textView2"
         android:layout_marginTop="49dp"
-        android:text="Games lost : "
+        android:text="Games draw : "
         android:textAppearance="?android:attr/textAppearanceMedium" />
   
 </RelativeLayout>

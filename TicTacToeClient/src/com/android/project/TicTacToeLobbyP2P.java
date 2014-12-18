@@ -92,7 +92,6 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			discoverService.stopDiscoveryService();
 		if(v.getId() == R.id.button_lobby_create) {
 			registerService = new RegisterService(TicTacToeLobbyP2P.this);
-			registerService.registerService(8090);
 
 			if(!isGamePlayed) {
 				TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
@@ -101,6 +100,9 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 				TicTacToeHelper.gameP2p.createGame(0);
 				
 				isGamePlayed = true;
+
+				registerService.registerService(TicTacToeHelper.gameP2p.
+						getServerSocket().getLocalPort());
 			}
 		}
 		else if(v.getId() == R.id.button_lobby_join) {
@@ -256,6 +258,8 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		
+		System.out.println("RequestCode: " + requestCode);
 		
 		if(requestCode == TicTacToeHelper.P2P_SERVERDONE) {
 			registerService.unregisterService();

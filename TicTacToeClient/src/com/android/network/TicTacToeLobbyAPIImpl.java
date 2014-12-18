@@ -28,35 +28,58 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 	private Runnable callback;
 	private String result;
 
+	/**
+	 * Constructor for network game lobby functions
+	 * @param activity
+	 */
 	public TicTacToeLobbyAPIImpl(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 		
 	}
-	
+
+	/**
+	 * Get activity of the network function caller - used for GUI purposes
+	 * @return the activity caller
+	 */
 	public TicTacToeGenericActivity getActivity() {
 		return activity;
 	}
 
+	/**
+	 * Set activity of the network function caller - used for GUI purposes
+	 * @param activity
+	 */
 	public void setActivity(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 	}
-	
-	public Runnable getCallback() {
-		return callback;
-	}
 
+	/**
+	 * Set callback for the network function
+	 * @param callback
+	 */
 	public void setCallback(Runnable callback) {
 		this.callback = callback;
 	}
 
+	/**
+	 * Get the result of the latest process
+	 * @return result in JSON format in String
+	 */
 	public String getResult() {
 		return result;
 	}
 
+	/**
+	 * Set the result of the latest process
+	 * @param result
+	 */
 	public void setResult(String result) {
 		this.result = result;
 	}
 
+	/**
+	 * Create a new game, if success then it will set the result to a GameId
+	 */
 	@Override
 	public void createGame(String name) {
 		while(isCalling);
@@ -71,6 +94,10 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * If a game is open, join that game and set result to GameId, 
+	 * if no game is opened then display error
+	 */
 	@Override
 	public void joinGame(String name) {
 		while(isCalling);
@@ -86,6 +113,9 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 
 	}
 
+	/**
+	 * Get all open game from lobby server
+	 */
 	@Override
 	public void getGameList() {
 		while(isCalling);
@@ -99,6 +129,9 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		connectionThread.start();
 	}
 	
+	/**
+	 * Get caller score from lobby server
+	 */
 	public void getScore() {
 		while(isCalling);
 		isCalling = true;
@@ -111,23 +144,44 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_GETSCORE);
 		connectionThread.start();
 	}
+
+	/**
+	 * ConnectionThread is the thread that is used to run the networking function
+	 * itself after it receives command from the TicTacToeLobbyAPIImpl class.
+	 * @author davidsoendoro-rohitgoyal
+	 *
+	 */
 	private class ConnectionThread extends Thread {
 		
 		private int command;
 		private String arguments;
-		
+
+		/**
+		 * Plain ConnectionThread constructor
+		 */
 		public ConnectionThread() {
 			
 		}
-		
+
+		/**
+		 * ConnectionThread constructor with arguments
+		 * @param arguments
+		 */
 		public ConnectionThread(String arguments) {
 			this.arguments = arguments;
 		}
-		
+
+		/**
+		 * For other class to set the command need to be used by ConnectionThread
+		 * @param command
+		 */
 		public void setCommand(int command) {
 			this.command = command;
 		}
 
+		/**
+		 * Main algorithm of ConnectionThread
+		 */
 		@Override
 		public void run() {
 			if (command == TicTacToeHelper.COMMAND_GETGAMELIST) {
@@ -144,6 +198,9 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 			}
 		}
 
+		/**
+		 * To Send HTTP request towards Lobby Server to get the list of games
+		 */
 		private void getGameListRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
@@ -169,7 +226,10 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 				isCalling = false;
 			}
 		}
-		
+
+		/**
+		 * To Send HTTP request towards Lobby Server to get requester score
+		 */
 		private void getScoreRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
@@ -196,6 +256,10 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 				isCalling = false;
 			}
 		}
+
+		/**
+		 * To Send HTTP request towards Lobby Server to create a new game
+		 */
 		private void createGameRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");
@@ -221,7 +285,10 @@ public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 				isCalling = false;
 			}
 		}
-		
+
+		/**
+		 * To Send HTTP request towards Lobby Server to join a game
+		 */
 		private void joinGameRequest() {
 			String stringBuffer = "";
 			androidHttpClient = AndroidHttpClient.newInstance("Android");

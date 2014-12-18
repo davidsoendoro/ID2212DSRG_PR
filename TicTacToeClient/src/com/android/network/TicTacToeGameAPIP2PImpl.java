@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -41,43 +42,75 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
     private final int DISCONNECT_TIME = 3;
     private int disconnectCounter;
 	
+    /**
+     * Constructor for server game
+     * @param activity
+     */
 	public TicTacToeGameAPIP2PImpl(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 		
 		try {
-			serverSocket = new ServerSocket(port);
+			serverSocket = new ServerSocket(0);
 			serverSocket.setReuseAddress(true);
+//			serverSocket.bind(new InetSocketAddress(port));
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Get activity of the network function caller - used for GUI purposes
+	 * @return the activity caller
+	 */
 	public TicTacToeGenericActivity getActivity() {
 		return activity;
 	}
 
+	/**
+	 * Set activity of the network function caller - used for GUI purposes
+	 * @param activity
+	 */
 	public void setActivity(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 	}
 
+	/**
+	 * Set callback for the network function
+	 * @param callback
+	 */
 	public void setCallback(Runnable callback) {
 		this.callback = callback;
 	}
 
+	/**
+	 * Get the result of the latest process
+	 * @return result in JSON format in String
+	 */
 	public String getResult() {
 		return result;
 	}
 
+	/**
+	 * Set the result of the latest process
+	 * @param result
+	 */
 	private void setResult(String result) {
 		this.result = result;
 	}
 
+	/**
+	 * Get the socket of the network function
+	 * @return
+	 */
 	public Socket getSocket() {
 		return clientSocket;
 	}
 
+	/**
+	 * Not used for P2P
+	 */
 	@Override
 	public void createSingleGame() {
 		while(isCalling);
@@ -91,6 +124,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Create a new game, if success then wait for contender
+	 */
 	@Override
 	public void createGame(int id) {
 //		getActivity().setDialog(ProgressDialog.show(getActivity(), 
@@ -101,6 +137,13 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	public ServerSocket getServerSocket() {
+		return serverSocket;
+	}
+
+	/**
+	 * If a game is open, join that game, if no game is opened then return error
+	 */
 	@Override
 	public void joinGame(int id) {
 		while(isCalling);
@@ -114,6 +157,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Cancel to Create a game or cancel existing game
+	 */
 	@Override
 	public void cancelGame() {		
 		ConnectionThread connectionThread = new ConnectionThread();
@@ -121,6 +167,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Wait for peer to start a new game
+	 */
 	@Override
 	public void waitForNewGame() {
 		while(isCalling);
@@ -131,6 +180,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Wait for opponent move, display indeterminate progress dialog
+	 */
 	@Override
 	public void waitForOpponentMove() {
 		ProgressDialog dialog = new ProgressDialog(getActivity());
@@ -170,6 +222,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		getActivity().getDialog().show();
 	}
 
+	/**
+	 * Make a move to position
+	 * @param position
+	 */
 	@Override
 	public void makeMove(String position) {
 		while(isCalling);
@@ -182,7 +238,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_MAKEMOVE);
 		connectionThread.start();
 	}
-	
+
+	/**
+	 * Clear the board and start a new game
+	 */
 	@Override
 	public void resetGame() {
 		while(isCalling);
@@ -196,29 +255,52 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * ConnectionThread is the thread that is used to run the networking function
+	 * itself after it receives command from the TicTacToeGameAPIP2PImpl class.
+	 * @author davidsoendoro-rohitgoyal
+	 *
+	 */
 	private class ConnectionThread extends Thread {
 		
 		private int command;
 		private String arguments;
-		
+
+		/**
+		 * Plain ConnectionThread constructor
+		 */
 		public ConnectionThread() {
 			
 		}
-		
+
+		/**
+		 * ConnectionThread constructor with arguments
+		 * @param arguments
+		 */
 		public ConnectionThread(String arguments) {
 			this.arguments = arguments;
 		}
-		
+
+		/**
+		 * For other class to set the command need to be used by ConnectionThread
+		 * @param command
+		 */
 		public void setCommand(int command) {
 			this.command = command;
 		}
 
+		/**
+		 * Main algorithm of ConnectionThread
+		 */
 		@Override
 		public void run() {
 			if(this.command == TicTacToeHelper.COMMAND_CREATEGAME) {
 				try {
-					if(serverSocket == null)
-						serverSocket = new ServerSocket(port);
+					if(serverSocket == null) {
+						serverSocket = new ServerSocket(0);
+						serverSocket.setReuseAddress(true);
+//						serverSocket.bind(new InetSocketAddress(port));
+					}
 					clientSocket = serverSocket.accept();
 					readString();
 				} catch (IOException e) {
@@ -243,6 +325,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Acting as a server - parsing strings input
+		 */
 		private void readString() {
 	        try {
 	            int i = 0;
@@ -311,6 +396,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	        }
 		}
 
+		/**
+		 * Here is where the parsed input command call the method requested
+		 * @param requestObject
+		 */
 	    private void executeAPI(JsonObject requestObject) {
 	        JsonElement element = requestObject.get("Request");
 	        String str = element.getAsString();
@@ -332,6 +421,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	        }
 	    }
 
+	    /**
+	     * Server action when it receives makeMove from server player
+	     * @param position
+	     */
 	    private void serverMakeMoveString(String position) {
 	    	printWriter = null;
             
@@ -374,10 +467,18 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			}
 	    }
 	    
+	    /**
+	     * The logic of serverMakeMoveString
+	     * @param position
+	     */
 	    private void serverMakeMove(String position) {
 	        TicTacToeGameAPIP2PImpl.this.tictactoeGame.makeMove(position, 1);
 	    }
 
+	    /**
+	     * Server action when it receives makeMove from client player
+	     * @param body
+	     */
 	    private void makeMoveString(JsonObject body) {
 	        printWriter = null;
 	            
@@ -419,13 +520,21 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 				e.printStackTrace();
 			}
 	    }
-	    
+
+	    /**
+	     * The logic of makeMoveString
+	     * @param position
+	     */
 	    private void makeMove(JsonObject body) {
 	        JsonElement element = body.get("position");
 	        String position = element.getAsString();
 	        TicTacToeGameAPIP2PImpl.this.tictactoeGame.makeMove(position, 2);
 	    }
 
+	    /**
+	     * Server action when it receives resetGame from server player
+	     * @param body
+	     */
 	    private void serverResetGameString() {
             try {
     	    	serverResetGame();
@@ -444,10 +553,18 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			}
 	    }
 	    
+	    /**
+	     * The logic of serverResetGameString
+	     * @param position
+	     */
 	    private void serverResetGame() {
 	    	TicTacToeGameAPIP2PImpl.this.tictactoeGame.reset(1);
 	    }
 	    
+	    /**
+	     * Server action when it receives resetGame from client player
+	     * @param position
+	     */
 	    private void resetGameString() {
 	        printWriter = null;
 	            
@@ -475,14 +592,19 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 				e.printStackTrace();
 			}
 	    }
-	    
+
+	    /**
+	     * The logic of resetGameString
+	     * @param position
+	     */
 	    private void resetGame() {
 	    	TicTacToeGameAPIP2PImpl.this.tictactoeGame.reset(2);
 	    }
 
+	    /**
+	     * Showing the opponent is disconnected for server player
+	     */
 	    private void displayOpponentDisconnected() {
-	    	// TODO Showing an alert that opponent is disconnected
-
             // Run callback to move to TicTacToeOnline Activity
             try {
                 JSONObject p2pCommand = new JSONObject();
@@ -496,6 +618,9 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			}
 	    }
 
+	    /**
+	     * Showing the opponent is disconnected for client player
+	     */
 	    private void opponentDisconnected() {
 	        printWriter = null;
 	            
@@ -523,9 +648,11 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 				e.printStackTrace();
 			}
 	    }
-	       
-	    // VS PLAYER
 
+	    /**
+	     * Server action when it receives createGame from client player
+	     * @param body
+	     */
 	    private void createGameString(JsonObject body) {
 	        printWriter = null;
 	        try {
@@ -561,16 +688,24 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 			}
 	    }
 	    
+	    /**
+	     * The logic of createGameString
+	     * @param body
+	     */
 	    private void createGame(JsonObject body) {
 	        int id = body.get("GameId").getAsInt();
 	        
-	        // Construct new HangmanGame
+	        // Construct new TicTacToeGame
 	        if(TicTacToeGameAPIP2PImpl.this.tictactoeGame == null) {
 	            TicTacToeGameAPIP2PImpl.this.tictactoeGame = new TicTacToeGame(id, 
 	            		clientSocket);
 	        }
 	    }
 
+	    /**
+	     * Server action when it receives cancelGame from client player
+	     * @param body
+	     */
 	    private void cancelGameString() {   
 	        printWriter = null;
 	            
@@ -598,6 +733,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	        }
 	    }
 
+	    /**
+	     * The logic of cancelGameString
+	     * @param body
+	     */
 	    private void cancelGame() {
 	    	// Display opponent disconnected
 	    	try {
@@ -611,6 +750,10 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 
 	}
 
+	/**
+	 * Write an output
+	 * @param string
+	 */
 	public void writeOutput(String string) {
 		System.out.println(string);
 	}

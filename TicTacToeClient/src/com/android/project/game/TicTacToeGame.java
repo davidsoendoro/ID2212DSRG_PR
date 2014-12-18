@@ -7,7 +7,6 @@ package com.android.project.game;
 
 import com.google.gson.JsonObject;
 import java.net.Socket;
-import java.util.HashMap;
 
 /**
  *
@@ -39,47 +38,84 @@ public class TicTacToeGame {
     private Socket player2Socket;
     private String message = "";
 
+    /**
+     * Constructor of TicTacToe game Player vs AI
+     */
     public TicTacToeGame() {
         this.id = 0;
         this.game_mode = 1;
     }
 
+    /**
+     * Constructor of TicTacToe game Player vs Player
+     * @param id
+     * @param socket
+     */
     public TicTacToeGame(int id, Socket socket) {
         this.id = id;
         this.game_mode = 0;
         this.player1Socket = socket;
     }
 
+    /**
+     * Return the game Id
+     * @return
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Return current turn
+     * @return
+     */
     public int getTurn() {
         return turn;
     }
-    
+
+    /**
+     * Return game mode 0 = player vs player; 1 = player vs AI
+     * @return
+     */
     public int getGame_mode() {
         return game_mode;
     }
     
+    /**
+     * Get Player1 Socket of this game
+     * @return
+     */
     public Socket getPlayer1Socket() {
         return player1Socket;
     }
 
+    /**
+     * Set Player1 Socket of this game
+     * @param player1Socket
+     */
     public void setPlayer1Socket(Socket player1Socket) {
         this.player1Socket = player1Socket;
     }
 
+    /**
+     * Get Player2 Socket of this game
+     * @return
+     */
     public Socket getPlayer2Socket() {
         return player2Socket;
     }
 
+    /**
+     * Set Player2 Socket of this game
+     * @param player2Socket
+     */
     public void setPlayer2Socket(Socket player2Socket) {
         this.player2Socket = player2Socket;
     }
+
     /**
-     * Prepares string message to be returned to clients for game status
-     * @return String
+     * Get String representation in JSON format of this game
+     * @return
      */
     public String getStringRepresentation() {
         JsonObject jsonObject = new JsonObject();
@@ -105,25 +141,6 @@ public class TicTacToeGame {
         jsonObject.addProperty("turn", turn);
 
         return jsonObject.toString();
-    }
-
-    /**
-     * Processes parameters from client request
-     * @param inputParameters
-     */
-    public void processParameter(String inputParameters) {
-        HashMap<String, String> parameters = new HashMap<String, String>();
-        String[] parametersSplit = inputParameters.split("&");
-        
-        for(String parameter : parametersSplit) {
-            String[] keyValue = parameter.split("=");
-            if(keyValue.length >= 2) {
-                parameters.put(keyValue[0], keyValue[1]);                
-            }
-            else if(keyValue.length >= 1){
-                parameters.put(keyValue[0], "");
-            }
-        }
     }
     
     /**
@@ -337,10 +354,15 @@ public class TicTacToeGame {
     	}    	
     }
 
+    /**
+     * Keep count of how many steps has the game been played
+     * @return
+     */
     public int incrementCount(){
     	count++;
     	return count;
     }
+    
     /**
      * best move calculation : the f_e_map is traversed to see the highest numbered
      * (x, y) position and the move is made.

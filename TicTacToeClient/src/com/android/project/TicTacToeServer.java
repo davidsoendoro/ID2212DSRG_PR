@@ -164,7 +164,7 @@ public class TicTacToeServer extends TicTacToeGenericActivity implements Runnabl
 					}
 				});
 				
-				alert.create().show();				
+				alert.create().show();
 			}
 		} catch (JSONException e) {
 			if(result.contains("preventDisconnection")) {

@@ -12,8 +12,6 @@ public class DiscoverService {
     private String SERVICE_NAME = "Client Device";
     private String SERVICE_TYPE = "_ttt._tcp.";
     
-    private String hostAddress;
-    private int hostPort;
     private NsdManager mNsdManager;
     private Runnable callback;
     private TicTacToeGenericActivity activity;
@@ -24,10 +22,15 @@ public class DiscoverService {
     
     private boolean isDiscovering;
     
+    /**
+     * Constructor to initiate DiscoverService
+     * @param context
+     */
     public DiscoverService(Context context) {
         // NSD Stuff
     	mNsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     }
+
     /**
      * To start discovery of network service specified by SERVICE_TYPE
      */
@@ -41,6 +44,7 @@ public class DiscoverService {
                 NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     	
     }
+
     /**
      * To tear down the discovery
      */
@@ -51,41 +55,54 @@ public class DiscoverService {
         }
     }
     
-    public Runnable getCallback() {
-		return callback;
-	}
-
+	/**
+	 * Set callback for the network function
+	 * @param callback
+	 */
 	public void setCallback(Runnable callback) {
 		this.callback = callback;
 	}
 	
+	/**
+	 * Get the result of the latest process
+	 * @return result in JSON format in String
+	 */
 	public String getResult() {
 		return result;
 	}
 
+	/**
+	 * Set the result of the latest process
+	 * @param result
+	 */
 	public void setResult(String result) {
 		this.result = result;
 	}
 
+	/**
+	 * Get all services discovered
+	 * @return All discovered services
+	 */
 	public List<NsdServiceInfo> getServices() {
 		return services;
 	}
 
-	public String getHostAddress() {
-		return hostAddress;
-	}
-
-	public int getHostPort() {
-		return hostPort;
-	}
-
+	/**
+	 * Get activity of the network function caller - used for GUI purposes
+	 * @return the activity caller
+	 */
 	public TicTacToeGenericActivity getActivity() {
 		return activity;
 	}
 
+	/**
+	 * Set activity of the network function caller - used for GUI purposes
+	 * @param activity
+	 */
 	public void setActivity(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 	}
+
 	/**
 	 * To stop service discovery of network
 	 */
@@ -96,6 +113,10 @@ public class DiscoverService {
         }
 	}
 	
+	/**
+	 * Get NSD manager
+	 * @return NSD manager associated to this object
+	 */
     public NsdManager getmNsdManager() {
 		return mNsdManager;
 	}

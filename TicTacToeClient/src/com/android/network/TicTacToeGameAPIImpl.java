@@ -131,7 +131,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 	}
 
 	/**
-	 * If a game is open, join that game, if no game is opened then return error
+	 * If a game is open, join that game, if no game is opened then display error
 	 */
 	@Override
 	public void joinGame(int id) {
@@ -147,7 +147,7 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 	}
 
 	/**
-	 * Cancel to Create a game
+	 * Cancel to Create a game or cancel existing game
 	 */
 	@Override
 	public void cancelGame() {
