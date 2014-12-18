@@ -30,7 +30,10 @@ public class UsersFacade extends AbstractFacade<Users> {
     public UsersFacade() {
         super(Users.class);
     }
-
+/**
+ * Inserts player in database
+ * @param name:player's unique ID
+ */
     public void insertUser(String name) {
         TypedQuery<Users> query = em.createNamedQuery(
                 "Users.findByUsername", Users.class)
@@ -44,6 +47,11 @@ public class UsersFacade extends AbstractFacade<Users> {
         em.flush();
     }
     }
+    /**
+     * To get score of a player
+     * @param name: player's unique ID
+     * @return User object
+     */
     public Users getScore(String name) {
 
         TypedQuery<Users> query = em.createNamedQuery(
@@ -54,6 +62,12 @@ public class UsersFacade extends AbstractFacade<Users> {
         return u;
     }
 
+    /**
+     * Updates score of the player in the database
+     * @param name: player's unique ID
+     * @param update: 1 for win, -1 for lost, 0 for draw
+     * @return id of row edited
+     */
     public int updateScore(String name, int update) {
         
         switch (update) {

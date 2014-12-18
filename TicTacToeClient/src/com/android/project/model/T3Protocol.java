@@ -24,6 +24,10 @@ public class T3Protocol {
         this.body = body;
     }
 
+    /**
+     * Creates JSON object from request and converts into string
+     * @return String
+     */
 	@Override
 	public String toString() {
 		JSONObject jsonObject = new JSONObject();

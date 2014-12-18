@@ -66,7 +66,9 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 //		buttonUnregister.setOnClickListener(this);
 		list = (ListView) findViewById(R.id.listViewConnections);
 	}
-
+/**
+ * Common listener for create and join game button
+ */
 	@Override
 	public void onClick(View v) {
 		
@@ -248,6 +250,9 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		}
 	}
 
+	/**
+	 * Callback when game activity is finished and users return to lobby
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);

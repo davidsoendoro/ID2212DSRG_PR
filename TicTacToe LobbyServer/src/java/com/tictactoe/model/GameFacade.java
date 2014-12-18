@@ -30,11 +30,18 @@ public class GameFacade extends AbstractFacade<Game> {
     public GameFacade() {
         super(Game.class);
     }
-    
+    /**
+     * List all valid games in the database
+     * @return List of Game objects
+     */
     public List getValidGames() {
         return em.createNamedQuery("Game.findByCount").setParameter("count", 1).getResultList();
     }
-    
+    /**
+     * Inserts game into database
+     * @param name: Game name
+     * @return id of the row updated
+     */
     public int insertGame(String name) {
         Game g = new Game(null, name, 1);
         em.persist(g);
@@ -42,7 +49,11 @@ public class GameFacade extends AbstractFacade<Game> {
         System.out.println(g.getId());
         return g.getId();
     }
-
+    /**
+    * To join existing valid game
+    * @param name: Game name to be joined
+    * @return id of the game joined
+    */
     public int joinGame(String name) {
         TypedQuery<Game> query = em.createNamedQuery(
                 "Game.findByName", Game.class)

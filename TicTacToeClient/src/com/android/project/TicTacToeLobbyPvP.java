@@ -36,7 +36,9 @@ public class TicTacToeLobbyPvP extends TicTacToeGenericActivity implements Runna
 		getAllGames();
 
 	}
-
+/**
+ * To fetch all valid games from lobby server
+ */
 	private void getAllGames() {
 		flag=1;
 		TicTacToeHelper.lobby.getGameList();

@@ -77,7 +77,10 @@ public class TicTacToeGame {
     public void setPlayer2Socket(Socket player2Socket) {
         this.player2Socket = player2Socket;
     }
-    
+    /**
+     * Prepares string message to be returned to clients for game status
+     * @return String
+     */
     public String getStringRepresentation() {
         JsonObject jsonObject = new JsonObject();
         
@@ -104,6 +107,10 @@ public class TicTacToeGame {
         return jsonObject.toString();
     }
 
+    /**
+     * Processes parameters from client request
+     * @param inputParameters
+     */
     public void processParameter(String inputParameters) {
         HashMap<String, String> parameters = new HashMap<String, String>();
         String[] parametersSplit = inputParameters.split("&");
@@ -119,6 +126,11 @@ public class TicTacToeGame {
         }
     }
     
+    /**
+     * Checks for validity of player's turn and allows it to make move
+     * @param position enetered by player
+     * @param player who makes the move
+     */
     public void makeMove(String position, int player) {
         System.out.println(player + " vs " + this.turn);
         if(player == turn) {
@@ -130,6 +142,10 @@ public class TicTacToeGame {
         }
     }
     
+    /**
+     * Sets the local move array
+     * @param position where player makes move
+     */
     public void afterMove(String position) {
     	int pos;
     	boolean result;

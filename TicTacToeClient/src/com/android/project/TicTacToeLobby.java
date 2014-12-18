@@ -31,6 +31,9 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 		buttonLobbyConnect.setOnClickListener(TicTacToeLobby.this);
 	}
 
+	/**
+	 * Listener for create game button
+	 */
 	@Override
 	public void onClick(View v) {
 		String ip = TicTacToeHelper.serverAddress;

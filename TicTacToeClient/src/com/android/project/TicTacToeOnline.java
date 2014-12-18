@@ -38,7 +38,9 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 			TicTacToeHelper.game.waitForOpponentMove();
 		}
 	}
-	
+	/**
+	 * Sets up the board for playing game
+	 */
 	private void initiate() {
 		setContentView(R.layout.main);
 		
@@ -207,6 +209,11 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 		
 	}
 
+	/**
+	 * Updates the board on client device
+	 * @param resultObj: Update received from server
+	 * @throws JSONException
+	 */
 	private void doGame(JSONObject resultObj) throws JSONException {
 		JSONObject bodyObj = new JSONObject(resultObj.getString("Body"));
 		
@@ -243,6 +250,10 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
 		}
 	}
 
+	/**
+	 * Updates the positions on tic tac toe board
+	 * @param body: Position array returned by server
+	 */
 	private void redrawMap(String body) {
 		String rows[] = body.split("/");
 		Integer arr[][] = new Integer[3][3];
@@ -300,6 +311,11 @@ public class TicTacToeOnline extends TicTacToeGenericActivity implements Runnabl
        	ib.setClickable(false);
     }
 
+    /**
+     * Updates score UI on board
+     * @param score1: Player1's score
+     * @param score2: Player2's score
+     */
     public void updateScore(int score1, int score2){
     	TextView tv = (TextView) findViewById(R.id.scoreboard);
 

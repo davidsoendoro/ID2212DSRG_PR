@@ -42,8 +42,8 @@ public class GameLogic {
 	}
 	
 	/**
-     * Checks for the result and Selects the next player.
-     * @param ib : Image button that was clicked by user / computer.
+     * Makes the move specified by player and checks result
+     * @param Pass the tag associated with the position on board 
      */
     public void after_move (CharSequence tag) {
     	CharSequence pos_str = "";				// position as a string.

@@ -134,7 +134,11 @@ public class TicTacToeGame extends TicTacToeGenericActivity {
     }
 
 	//************************ End of Global Variable Declaration **********************************     
-    
+    /**
+     * Displays the message in dialog
+     * @param message received from server
+     * @return True if dialog is shown and false if dialog is not shown
+     */
     public boolean show_result(CharSequence message)		//function to select the game mode
     {   
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -150,6 +154,11 @@ public class TicTacToeGame extends TicTacToeGenericActivity {
         return true;
     }
     
+    /**
+     * Updates score on board
+     * @param score1: Player 1's score
+     * @param score2: Players 2's score
+     */
     public void updateScore(int score1, int score2){
     	TextView tv = (TextView) findViewById(R.id.scoreboard);
 

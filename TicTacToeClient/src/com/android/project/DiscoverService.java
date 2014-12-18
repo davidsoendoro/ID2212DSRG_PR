@@ -28,7 +28,9 @@ public class DiscoverService {
         // NSD Stuff
     	mNsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     }
-    
+    /**
+     * To start discovery of network service specified by SERVICE_TYPE
+     */
     public void discover(){
     	while(isCalling);
 		isCalling = true;
@@ -39,7 +41,9 @@ public class DiscoverService {
                 NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     	
     }
-    
+    /**
+     * To tear down the discovery
+     */
     protected void onDestroy() {
         if (mNsdManager != null && isDiscovering) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
@@ -82,7 +86,9 @@ public class DiscoverService {
 	public void setActivity(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 	}
-	
+	/**
+	 * To stop service discovery of network
+	 */
 	public void stopDiscoveryService() {
         if (mNsdManager != null && isDiscovering) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
@@ -94,6 +100,9 @@ public class DiscoverService {
 		return mNsdManager;
 	}
 
+    /**
+     * Discovery listener for events after discovery is started
+     */
 	NsdManager.DiscoveryListener mDiscoveryListener = new NsdManager.DiscoveryListener() {
     
         // Called as soon as service discovery begins.

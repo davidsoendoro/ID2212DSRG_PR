@@ -114,7 +114,7 @@ public class LobbyServlet extends HttpServlet {
     }// </editor-fold>
 /**
      Handles HTTP GET /LobbyServlet
-     *
+     * Lists all valid games on lobby
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs
@@ -135,8 +135,10 @@ public class LobbyServlet extends HttpServlet {
     }
 
 /**
-     Handles HTTP GET /CreateGame?name=""
-     *
+     Handles HTTP GET /CreateGame?name=""&username""
+     * Creates game with specified name
+     * name: Game name
+     * username:player's device ID
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs
@@ -154,8 +156,9 @@ public class LobbyServlet extends HttpServlet {
         }
     }
 /**
-     Handles HTTP GET /JoinGame?name=""
-     *
+     Handles HTTP GET /JoinGame?name=""&username=""
+     * name: Game name
+     * username: Players's device ID
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs
@@ -182,8 +185,9 @@ public class LobbyServlet extends HttpServlet {
     
     
     /**
-     Handles HTTP GET /UpdateScore?username=""&win=""&draw=""&lose=""
-     *
+     Handles HTTP GET /UpdateScore?username=""&update=""
+     * username: Player's device ID
+     * update: score
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs
@@ -210,7 +214,7 @@ public class LobbyServlet extends HttpServlet {
     
     /**
      Handles HTTP GET /GetScore?username=""
-     *
+     * username: player's device ID
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs
@@ -233,7 +237,7 @@ public class LobbyServlet extends HttpServlet {
     
     /**
      Handles HTTP GET /GetAllUsers
-     *
+     * Lists all users registered on lobby
      * @param request servlet request
      * @param response servlet response
      * @throws IOException if an I/O error occurs

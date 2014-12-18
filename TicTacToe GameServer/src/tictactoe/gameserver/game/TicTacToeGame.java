@@ -89,6 +89,11 @@ public class TicTacToeGame {
         this.player2Socket = player2Socket;
     }
 
+    /**
+     * Creates string representation of position array
+     *
+     * @return String
+     */
     public String getStringRepresentation() {
         JsonObject jsonObject = new JsonObject();
 
@@ -116,6 +121,11 @@ public class TicTacToeGame {
         return jsonObject.toString();
     }
 
+    /**
+     * Processes request parameter from client
+     *
+     * @param inputParameters: string parameters
+     */
     public void processParameter(String inputParameters) {
         HashMap<String, String> parameters = new HashMap<String, String>();
         String[] parametersSplit = inputParameters.split("&");
@@ -134,10 +144,21 @@ public class TicTacToeGame {
         }
     }
 
+    /**
+     * Checks if both player sockets are available
+     *
+     * @return true if sockets are available
+     */
     public boolean isStartable() {
         return (player1Socket != null && player2Socket != null);
     }
 
+    /**
+     * Checks for player's turn and make move accordingly
+     *
+     * @param position: board position of move
+     * @param player who makes move
+     */
     public void makeMove(String position, int player) {
         System.out.println(player + " vs " + this.turn);
         if (player == turn) {
@@ -148,6 +169,10 @@ public class TicTacToeGame {
         }
     }
 
+    /**
+     *Update local position array when move is made
+     * @param position: board position of move by player
+     */
     public void afterMove(String position) {
         int pos;
         boolean result;
@@ -197,8 +222,10 @@ public class TicTacToeGame {
                 if (game_mode == 0) {	// human vs human  
                     message = "Congrats player 2 wins !!";
                     updateScoreOnLobby(2, 1);
+                    updateScoreOnLobby(1, -1);
                 } else {	// human vs computer
                     message = "Computer Wins !!";
+                    updateScoreOnLobby(1, -1);
                 }
             }
         } else if ((result == false) && arr_isFull()) {
@@ -231,8 +258,11 @@ public class TicTacToeGame {
                         score_player_2 += 1;
                         if (game_mode == 0) {	// human vs human  
                             message = "Congrats 2 wins !!";
+                            updateScoreOnLobby(2, 1);
+                            updateScoreOnLobby(1, -1);
                         } else {
                             message = "Computer Wins !!";
+                            updateScoreOnLobby(1, -1);
                         }
                     }
                 } else if ((result == false) && arr_isFull()) {
@@ -247,7 +277,6 @@ public class TicTacToeGame {
     /**
      * Update score on lobby server
      *
-     * @return void
      */
     public void updateScoreOnLobby(final int player, final int update) {
 
@@ -667,7 +696,7 @@ public class TicTacToeGame {
             k++;
         }
 
-    	// diagonal 2 traversal.
+        // diagonal 2 traversal.
         // --> reset k to point to the 1st row, and last(3rd) element.
         k = 2;
         for (int i = 0; i < 3; i++) {
@@ -681,7 +710,10 @@ public class TicTacToeGame {
 
         // ------ end of analysis array initialization ------------- //
     }
-
+/**
+ * Resets the game parameters 
+ * @param caller 
+ */
     public void reset(int caller) {
         count = 0;
         turn = 1;
