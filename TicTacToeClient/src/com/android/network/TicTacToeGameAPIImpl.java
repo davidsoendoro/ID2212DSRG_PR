@@ -19,6 +19,13 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 
+/**
+ * TicTacToeGameAPIImpl is an implementation of TicTacToeGameAPI interface
+ * to handle Client - Game Server networking functions of TicTacToe game. 
+ * It encapsulates the thread-based network functions into a simple function.
+ * @author davidsoendoro-rohitgoyal
+ *
+ */
 public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 
 	private String ip;
@@ -31,36 +38,69 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 	
 	private boolean isCalling = false;
 	
+	/**
+	 * Constructor for network game functions
+	 * @param activity
+	 * @param ip
+	 * @param port
+	 */
 	public TicTacToeGameAPIImpl(TicTacToeGenericActivity activity, final String ip, final int port) {
 		this.activity = activity;
 		this.ip = ip;
 		this.port = port;
 	}
 	
+	/**
+	 * Get activity of the network function caller - used for GUI purposes
+	 * @return the activity caller
+	 */
 	public TicTacToeGenericActivity getActivity() {
 		return activity;
 	}
 
+	/**
+	 * Set activity of the network function caller - used for GUI purposes
+	 * @param activity
+	 */
 	public void setActivity(TicTacToeGenericActivity activity) {
 		this.activity = activity;
 	}
 
+	/**
+	 * Set callback for the network function
+	 * @param callback
+	 */
 	public void setCallback(Runnable callback) {
 		this.callback = callback;
 	}
 
+	/**
+	 * Get the result of the latest process
+	 * @return result in JSON format in String
+	 */
 	public String getResult() {
 		return result;
 	}
 
+	/**
+	 * Set the result of the latest process
+	 * @param result
+	 */
 	private void setResult(String result) {
 		this.result = result;
 	}
 
+	/**
+	 * Get the socket of the network function
+	 * @return
+	 */
 	public Socket getSocket() {
 		return socket;
 	}
 
+	/**
+	 * Create a new game vs AI
+	 */
 	@Override
 	public void createSingleGame() {
 		while(isCalling);
@@ -74,6 +114,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Create a new game, if success then wait for contender
+	 */
 	@Override
 	public void createGame(int id) {
 		while(isCalling);
@@ -87,6 +130,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * If a game is open, join that game, if no game is opened then return error
+	 */
 	@Override
 	public void joinGame(int id) {
 		while(isCalling);
@@ -100,19 +146,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
-	@Override
-	public void startGame() {
-		while(isCalling);
-		isCalling = true;
-		
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Start Game", "Now Starting..."));
-		
-		ConnectionThread connectionThread = new ConnectionThread();
-		connectionThread.setCommand(TicTacToeHelper.COMMAND_STARTGAME);
-		connectionThread.start();
-	}
-
+	/**
+	 * Cancel to Create a game
+	 */
 	@Override
 	public void cancelGame() {
 		ConnectionThread connectionThread = new ConnectionThread();
@@ -120,6 +156,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Wait for peer to start a new game
+	 */
 	@Override
 	public void waitForNewGame() {
 		while(isCalling);
@@ -133,6 +172,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * Wait for opponent move, display indeterminate progress dialog
+	 */
 	@Override
 	public void waitForOpponentMove() {
 		while(isCalling);
@@ -179,13 +221,10 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
-	@Override
-	public void preventDisconnection() {
-		ConnectionThread connectionThread = new ConnectionThread();
-		connectionThread.setCommand(TicTacToeHelper.COMMAND_PREVENTDISCONNECTION);
-		connectionThread.start();
-	}
-
+	/**
+	 * Make a move to position
+	 * @param position
+	 */
 	@Override
 	public void makeMove(String position) {
 		while(isCalling);
@@ -198,7 +237,10 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_MAKEMOVE);
 		connectionThread.start();
 	}
-	
+
+	/**
+	 * Clear the board and start a new game
+	 */
 	@Override
 	public void resetGame() {
 		while(isCalling);
@@ -212,23 +254,43 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 		connectionThread.start();
 	}
 
+	/**
+	 * ConnectionThread is the thread that is used to run the networking function
+	 * itself after it receives command from the TicTacToeGameAPIImpl class.
+	 * @author davidsoendoro-rohitgoyal
+	 *
+	 */
 	private class ConnectionThread extends Thread {
 		
 		private int command;
 		private String arguments;
 		
+		/**
+		 * Plain ConnectionThread constructor
+		 */
 		public ConnectionThread() {
 			
 		}
 		
+		/**
+		 * ConnectionThread constructor with arguments
+		 * @param arguments
+		 */
 		public ConnectionThread(String arguments) {
 			this.arguments = arguments;
 		}
 		
+		/**
+		 * For other class to set the command need to be used by ConnectionThread
+		 * @param command
+		 */
 		public void setCommand(int command) {
 			this.command = command;
 		}
 
+		/**
+		 * Main algorithm of ConnectionThread
+		 */
 		@Override
 		public void run() {
 			if(socket == null) {
@@ -249,9 +311,6 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			else if (command == TicTacToeHelper.COMMAND_JOINGAME) {
 				joinGameRequest();
 			}
-			else if (command == TicTacToeHelper.COMMAND_STARTGAME) {
-				
-			}
 			else if (command == TicTacToeHelper.COMMAND_CANCELGAME) {
 				cancelGameRequest();
 			}
@@ -260,9 +319,6 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 			else if (command == TicTacToeHelper.COMMAND_WAITFORMOVE) {
 				waitForOpponentMoveResponse();
-			}
-			else if (command == TicTacToeHelper.COMMAND_PREVENTDISCONNECTION) {
-				preventDisconnectionResponse();
 			}
 			else if (command == TicTacToeHelper.COMMAND_MAKEMOVE) {
 				try {
@@ -278,6 +334,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of waitForOpponentMove 
+		 */
 		private void waitForOpponentMoveResponse() {
 			String str;
 			BufferedReader rd;
@@ -296,6 +355,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of cancelGame
+		 */
 		private void cancelGameRequest() {
 			try {		
 				socket.close();
@@ -313,6 +375,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of waitForNewGame
+		 */
 		private void waitForNewGameResponse() {
 			String str;
 			BufferedReader rd;
@@ -331,25 +396,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
-		public void preventDisconnectionResponse() {
-			String str;
-			BufferedReader rd;
-			try {
-				rd = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-	            }
-	            while ((str = rd.readLine()) != null && !str.trim().equals("")) {
-	                System.out.println(str);
-                    setResult(command + " - " + "preventDisconnection" + " - " + str);
-	                getActivity().runOnUiThread(callback);
-	            }
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
+		/**
+		 * Logic implementation of createGame
+		 */
 		private void createGameRequest() {
 			String str;
 			try {				
@@ -385,6 +434,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of createSingleGame
+		 */
 		private void createSingleGameRequest() {
 			String str;
 			try {				
@@ -412,6 +464,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of joinGame
+		 */
 		private void joinGameRequest() {
 			String str;
 			try {				
@@ -446,6 +501,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of makeMove
+		 */
 		private void makeMoveRequest(String position) {
 			String str;
 			try {				
@@ -495,6 +553,9 @@ public class TicTacToeGameAPIImpl implements TicTacToeGameAPI {
 			}
 		}
 
+		/**
+		 * Logic implementation of resetGame
+		 */
 		private void resetGameRequest() {
 			String str;
 			try {				

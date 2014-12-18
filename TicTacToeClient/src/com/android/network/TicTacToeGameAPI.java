@@ -18,11 +18,6 @@ public interface TicTacToeGameAPI {
 	public void joinGame(int id);
 	
 	/**
-	 * Start a created game
-	 */
-	public void startGame();
-	
-	/**
 	 * Cancel to Create a game
 	 */
 	public void cancelGame();
@@ -32,18 +27,19 @@ public interface TicTacToeGameAPI {
 	 */
 	public void waitForNewGame();
 	
+	/**
+	 * Wait for opponent move, display indeterminate progress dialog
+	 */
 	public void waitForOpponentMove();
 	
 	/**
-	 * Prevent opponent disconnection
-	 */
-	public void preventDisconnection();
-	
-	/**
-	 * Make a move
+	 * Make a move to position
 	 * @param position
 	 */
 	public void makeMove(String position);
 	
+	/**
+	 * Clear the board and start a new game
+	 */
 	public void resetGame();
 }

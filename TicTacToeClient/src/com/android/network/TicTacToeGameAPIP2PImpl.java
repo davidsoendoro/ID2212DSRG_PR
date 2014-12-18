@@ -115,19 +115,6 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 	}
 
 	@Override
-	public void startGame() {
-		while(isCalling);
-		isCalling = true;
-		
-		getActivity().setDialog(ProgressDialog.show(getActivity(), 
-				"Start Game", "Now Starting..."));
-		
-		ConnectionThread connectionThread = new ConnectionThread();
-		connectionThread.setCommand(TicTacToeHelper.COMMAND_STARTGAME);
-		connectionThread.start();
-	}
-
-	@Override
 	public void cancelGame() {		
 		ConnectionThread connectionThread = new ConnectionThread();
 		connectionThread.setCommand(TicTacToeHelper.COMMAND_CANCELGAME);
@@ -181,13 +168,6 @@ public class TicTacToeGameAPIP2PImpl implements TicTacToeGameAPI {
 		});
 		getActivity().setDialog(dialog);
 		getActivity().getDialog().show();
-	}
-
-	@Override
-	public void preventDisconnection() {
-		ConnectionThread connectionThread = new ConnectionThread();
-		connectionThread.setCommand(TicTacToeHelper.COMMAND_PREVENTDISCONNECTION);
-		connectionThread.start();
 	}
 
 	@Override
