@@ -117,14 +117,6 @@ public class TicTacToeGame {
                 parameters.put(keyValue[0], "");
             }
         }
-        
-        String param;
-        if((param = parameters.get("word")) != null) {
-        }
-    }
-    
-    public boolean isStartable() {
-        return (player1Socket != null && player2Socket != null);  
     }
     
     public void makeMove(String position, int player) {

@@ -8,13 +8,11 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 
+import android.app.ProgressDialog;
+import android.net.http.AndroidHttpClient;
+
 import com.android.project.TicTacToeGenericActivity;
 import com.android.project.helper.TicTacToeHelper;
-
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.net.http.AndroidHttpClient;
-import android.telephony.TelephonyManager;
 
 public class TicTacToeLobbyAPIImpl implements TicTacToeLobbyAPI {
 

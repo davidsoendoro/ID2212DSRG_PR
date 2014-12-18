@@ -42,7 +42,7 @@ public class TicTacToeCreateJoinActivity extends TicTacToeGenericActivity implem
 			}
 		}
 		else if(v.getId()==R.id.button_join){
-			Intent intent= new Intent(this, TicTacToeLobbyPvP.class);
+			Intent intent = new Intent(this, TicTacToeLobbyPvP.class);
 			startActivity(intent);
 		}
 	}

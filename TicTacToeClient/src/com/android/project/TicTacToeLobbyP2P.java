@@ -5,42 +5,38 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.network.TicTacToeGameAPIImpl;
-import com.android.network.TicTacToeGameAPIP2PImpl;
-import com.android.project.helper.TicTacToeHelper;
-
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+
+import com.android.network.TicTacToeGameAPIImpl;
+import com.android.network.TicTacToeGameAPIP2PImpl;
+import com.android.project.helper.TicTacToeHelper;
 
 public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnClickListener, Runnable, OnCancelListener {
 
-	private Button buttonLobbyConnect;
-	private TextView textViewUserIp;
+//	private Button buttonLobbyConnect;
+//	private TextView textViewUserIp;
 	private boolean isServer = false;
 	private RegisterService registerService;
 	private DiscoverService discoverService;
 	
 	private ListView list;
+	private ArrayAdapter<String> adapter;
+	private ArrayList<String> connectionStrings;
+	
+	private boolean isGamePlayed = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,38 +62,44 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		buttonCreate.setOnClickListener(this);
 		Button buttonJoin = (Button) findViewById(R.id.button_lobby_join);
 		buttonJoin.setOnClickListener(this);
-		Button buttonUnregister = (Button) findViewById(R.id.button_lobby_unregister);
-		buttonUnregister.setOnClickListener(this);
+//		Button buttonUnregister = (Button) findViewById(R.id.button_lobby_unregister);
+//		buttonUnregister.setOnClickListener(this);
 		list = (ListView) findViewById(R.id.listViewConnections);
 	}
 
 	@Override
 	public void onClick(View v) {
-		String ip = "130.229.154.233";
-		int port = 8090;
-		/*
-		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);
-		EditText editTextPort = (EditText) findViewById(R.id.editText_lobby_port);
 		
-		if(editTextIp.getText().length() > 0) {
-			ip = editTextIp.getText().toString();
-		}
-		if(editTextPort.getText().length() > 0) {
-			port = Integer.valueOf(editTextPort.getText().toString());
-		}
-		*/
+//		String ip = "130.229.154.233";
+//		int port = 8090;
+//
+//		EditText editTextIp = (EditText) findViewById(R.id.editText_lobby_ip);
+//		EditText editTextPort = (EditText) findViewById(R.id.editText_lobby_port);
+//		
+//		if(editTextIp.getText().length() > 0) {
+//			ip = editTextIp.getText().toString();
+//		}
+//		if(editTextPort.getText().length() > 0) {
+//			port = Integer.valueOf(editTextPort.getText().toString());
+//		}
+		
 		// Threading
-		if(registerService != null)
-			registerService.unregisterService();
+//		if(registerService != null)
+//			registerService.unregisterService();
 		if(discoverService != null)
 			discoverService.stopDiscoveryService();
 		if(v.getId() == R.id.button_lobby_create) {
-			TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
-			TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
-			isServer = true;
 			registerService = new RegisterService(TicTacToeLobbyP2P.this);
 			registerService.registerService(8090);
-			TicTacToeHelper.gameP2p.createGame(0);
+
+			if(!isGamePlayed) {
+				TicTacToeHelper.gameP2p = new TicTacToeGameAPIP2PImpl(TicTacToeLobbyP2P.this);
+				TicTacToeHelper.gameP2p.setCallback(TicTacToeLobbyP2P.this);
+				isServer = true;
+				TicTacToeHelper.gameP2p.createGame(0);
+				
+				isGamePlayed = true;
+			}
 		}
 		else if(v.getId() == R.id.button_lobby_join) {
 			discoverService=new DiscoverService(this.getApplicationContext());
@@ -118,12 +120,12 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 				Toast.makeText(this, "Unable to connect!", Toast.LENGTH_SHORT).show();
 			}*/
 		}
-		else if(v.getId() == R.id.button_lobby_unregister) {
-			if(registerService != null)
-				registerService.unregisterService();
-			if(discoverService != null)
-				discoverService.stopDiscoveryService();
-		}
+//		else if(v.getId() == R.id.button_lobby_unregister) {
+//			if(registerService != null)
+//				registerService.unregisterService();
+//			if(discoverService != null)
+//				discoverService.stopDiscoveryService();
+//		}
 	}
 	
 	@Override
@@ -149,16 +151,16 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 		try {
 			if (discoverService != null) {
 				result = discoverService.getResult();
-				if(result.equals("DiscoveryService")) {
+				if(result != null && result.equals("DiscoveryService")) {
 					System.out.println(result);
 					
-					ArrayList<String> connectionStrings = new ArrayList<String>();
+					connectionStrings = new ArrayList<String>();
 					ArrayList<NsdServiceInfo> services = (ArrayList<NsdServiceInfo>) discoverService.getServices();
 					for(NsdServiceInfo service : services) {
 						connectionStrings.add(service.getServiceName());
 					}
 					
-					ArrayAdapter<String> adapter= new ArrayAdapter<String>(this, 
+					adapter= new ArrayAdapter<String>(this, 
 							android.R.layout.simple_list_item_1,android.R.id.text1, connectionStrings);
 					list.setAdapter(adapter);
 					
@@ -199,13 +201,8 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 			                		System.out.println(hostAddress + ":" + hostPort);
 			                		TicTacToeHelper.game = new TicTacToeGameAPIImpl(TicTacToeLobbyP2P.this, 
 			                				hostAddress, hostPort);
-			                		if(TicTacToeHelper.game.getSocket() != null) {
-			                			TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
-			                			TicTacToeHelper.game.createGame(0);
-			                		}
-			                		else {
-			                			Toast.makeText(TicTacToeLobbyP2P.this, "Unable to connect!", Toast.LENGTH_SHORT).show();
-			                		}
+		                			TicTacToeHelper.game.setCallback(TicTacToeLobbyP2P.this);
+		                			TicTacToeHelper.game.createGame(0);
 			                    }
 			                });
 							
@@ -226,7 +223,7 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 						// Callback for P2PcreateGame
 						Intent i = new Intent(TicTacToeLobbyP2P.this, TicTacToeServer.class);
 						i.putExtra("mode", TicTacToeHelper.PVP_1stplayer);
-						startActivityForResult(i, 0);
+						startActivityForResult(i, TicTacToeHelper.P2P_SERVERDONE);
 					}
 				}
 			}
@@ -242,7 +239,7 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 						// Callback for joinGame
 						Intent i = new Intent(this, TicTacToeOnline.class);
 						i.putExtra("mode", TicTacToeHelper.PVP_2ndplayer);
-						startActivity(i);
+						startActivityForResult(i, TicTacToeHelper.P2P_CLIENTDONE);
 					}
 				}
 			}
@@ -255,7 +252,14 @@ public class TicTacToeLobbyP2P extends TicTacToeGenericActivity implements OnCli
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		registerService.unregisterService();
+		if(requestCode == TicTacToeHelper.P2P_SERVERDONE) {
+			registerService.unregisterService();
+			isGamePlayed = false;
+		}
+		else if(requestCode == TicTacToeHelper.P2P_CLIENTDONE) {
+			connectionStrings.clear();
+			adapter.notifyDataSetChanged();
+		}
 	}
 	
 }

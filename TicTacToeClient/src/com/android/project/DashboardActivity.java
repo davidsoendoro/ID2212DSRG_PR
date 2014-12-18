@@ -3,12 +3,11 @@ package com.android.project;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.network.TicTacToeLobbyAPIImpl;
-import com.android.project.helper.TicTacToeHelper;
-import com.google.gson.JsonParser;
-
 import android.os.Bundle;
 import android.widget.TextView;
+
+import com.android.network.TicTacToeLobbyAPIImpl;
+import com.android.project.helper.TicTacToeHelper;
 
 public class DashboardActivity extends TicTacToeGenericActivity implements Runnable{
 

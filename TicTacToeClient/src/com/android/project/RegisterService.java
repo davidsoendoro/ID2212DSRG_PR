@@ -1,17 +1,11 @@
 package com.android.project;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
+import com.android.project.helper.TicTacToeHelper;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
 import android.net.nsd.NsdManager.RegistrationListener;
-import android.net.wifi.WifiManager;
-import android.os.Bundle;
-import android.text.format.Formatter;
+import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
 public class RegisterService {
@@ -25,6 +19,7 @@ public class RegisterService {
 	  
 
     public RegisterService(Context context){
+    	SERVICE_NAME = TicTacToeHelper.getDeviceName() + "-" + TicTacToeHelper.IMEI;
     	mContext = context; 
         mNsdManager = (NsdManager) mContext.getSystemService(Context.NSD_SERVICE);
     }

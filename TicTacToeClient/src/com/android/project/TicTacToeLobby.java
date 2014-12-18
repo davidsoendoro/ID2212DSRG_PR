@@ -3,11 +3,6 @@ package com.android.project;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.network.TicTacToeGameAPIImpl;
-import com.android.project.helper.TicTacToeHelper;
-
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
@@ -17,7 +12,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+
+import com.android.network.TicTacToeGameAPIImpl;
+import com.android.project.helper.TicTacToeHelper;
 
 public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickListener, Runnable, OnCancelListener {
 
@@ -89,35 +86,6 @@ public class TicTacToeLobby extends TicTacToeGenericActivity implements OnClickL
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-			
-			if(result.contains("startGame")) {
-				ProgressDialog dialog = new ProgressDialog(this);
-				dialog.setTitle("Waiting for Opponent");
-				dialog.setMessage("Waiting...");
-				dialog.setCancelable(true);
-				dialog.setOnCancelListener(TicTacToeLobby.this);
-				setDialog(dialog);
-				getDialog().show();
-				TicTacToeHelper.game.waitForNewGame();
-			}
-			else if(result.contains("waitForNewGame")) {
-				Intent i = new Intent(TicTacToeLobby.this, TicTacToeOnline.class);
-				startActivity(i);
-			}
-			else if(result.contains("joinGame")) {
-				if(result.contains("404")) {
-					AlertDialog.Builder alert = new AlertDialog.Builder(TicTacToeLobby.this);
-					
-					alert.setTitle("Vacant Games not Found!");
-					alert.setMessage("Can't find any vacant game! Please create new or try again later!");
-					
-					alert.create().show();
-				}
-				else {
-					Intent i = new Intent(TicTacToeLobby.this, TicTacToeOnline.class);
-					startActivity(i);				
-				}
-			}
 		}
 		
 	}
